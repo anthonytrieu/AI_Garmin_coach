@@ -8,13 +8,13 @@ export function fmtDuration(seconds: number | null | undefined): string {
 
 export function fmtDate(iso: string | null | undefined): string {
   if (!iso) return "–"
-  const d = new Date(iso)
+  const d = new Date(/^\d{4}-\d{2}-\d{2}$/.test(iso) ? `${iso}T12:00:00` : iso)
   return d.toLocaleDateString(undefined, { month: "short", day: "numeric" })
 }
 
 export function fmtDateTime(iso: string | null | undefined): string {
   if (!iso) return "–"
-  const d = new Date(iso)
+  const d = new Date(/^\d{4}-\d{2}-\d{2}$/.test(iso) ? `${iso}T12:00:00` : iso)
   return d.toLocaleDateString(undefined, {
     weekday: "short",
     month: "short",

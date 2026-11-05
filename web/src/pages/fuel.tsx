@@ -1,3 +1,4 @@
+import { storageKey } from "@/lib/mode"
 import { useEffect, useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { Badge } from "@/components/ui/badge"
@@ -35,7 +36,7 @@ import {
 import { api, type Course } from "@/lib/api"
 import { fmtNum } from "@/lib/format"
 
-const STORAGE_KEY = "garmin-coach-fuel-plans"
+const STORAGE_KEY = storageKey("fuel-plans")
 
 const DEFAULTS: FuelingInputs = {
   duration_min: 180,
@@ -49,8 +50,8 @@ const DEFAULTS: FuelingInputs = {
   custom_products: [],
 }
 
-// From training/whistler-gran-fondo-plan.md: ~122 km, 4.5-5 h at tempo effort.
-const WHISTLER: Partial<FuelingInputs> = {
+// Illustrative long-event preset; adjust duration and products to your needs.
+const LONG_EVENT: Partial<FuelingInputs> = {
   duration_min: 285,
   intensity: "tempo",
   carbs_per_h: 80,
@@ -149,10 +150,10 @@ export default function Fuel() {
             setCarbsTouched(true)
             setCourseId("manual")
             setDurationTouched(true)
-            setInputs((s) => ({ ...s, ...WHISTLER }))
+            setInputs((s) => ({ ...s, ...LONG_EVENT }))
           }}
         >
-          ⛰ Whistler Gran Fondo preset
+          ⛰ Long gran fondo preset
         </Button>
       </div>
 

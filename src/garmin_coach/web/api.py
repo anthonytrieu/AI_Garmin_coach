@@ -8,15 +8,13 @@ original typed cause, which maps to meaningful HTTP statuses here.
 from __future__ import annotations
 
 import json
-from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, HTTPException
 
 from .. import server
 from ..client import RateLimitedError, ReauthRequiredError
-
-PLAN_DIR = Path(__file__).resolve().parents[3] / "training"
+from .settings import plan_dir
 
 router = APIRouter(prefix="/api")
 
@@ -92,7 +90,7 @@ def courses() -> list[dict[str, Any]]:
 @router.get("/sessions")
 def sessions() -> dict[str, Any]:
     """Structured weekly sessions of the current training plan."""
-    path = PLAN_DIR / "whistler-sessions.json"
+    path = plan_dir() / "sessions.json"
     if not path.exists():
         raise HTTPException(status_code=404, detail="No structured session plan found")
     return json.loads(path.read_text())  # type: ignore[no-any-return]
@@ -100,7 +98,7 @@ def sessions() -> dict[str, Any]:
 
 @router.get("/plan")
 def plan() -> dict[str, Any]:
-    plans = sorted(PLAN_DIR.glob("*.md")) if PLAN_DIR.exists() else []
+    plans = sorted(plan_dir().glob("*.md")) if plan_dir().exists() else []
     if not plans:
         raise HTTPException(status_code=404, detail="No training plan found in training/")
     newest = plans[-1]

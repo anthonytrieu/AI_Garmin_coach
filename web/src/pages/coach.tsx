@@ -1,8 +1,16 @@
 import { useEffect, useRef, useState } from "react"
 import ReactMarkdown from "react-markdown"
 import { useLocation } from "react-router-dom"
+import { api, type ConversationSummary } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 interface ChatMessage {
   role: "user" | "assistant"
@@ -22,7 +30,7 @@ interface SseEvent {
 const SUGGESTIONS = [
   "How was my last ride?",
   "Am I recovered enough for intervals tomorrow?",
-  "How is this week tracking against my Whistler plan?",
+  "How is this week tracking against my training plan?",
   "What should I focus on this weekend?",
 ]
 
@@ -47,6 +55,8 @@ export default function Coach() {
   const location = useLocation()
   const prefill = (location.state as { prefill?: string } | null)?.prefill
   const [messages, setMessages] = useState<ChatMessage[]>([])
+  const [conversations, setConversations] = useState<ConversationSummary[]>([])
+  const [activeId, setActiveId] = useState<string | null>(null)
   const [input, setInput] = useState(prefill ?? "")
   const [busy, setBusy] = useState(false)
   const sessionRef = useRef<string | null>(null)
@@ -55,6 +65,47 @@ export default function Coach() {
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" })
   }, [messages])
+
+  useEffect(() => {
+    api
+      .conversations()
+      .then((list) => {
+        setConversations(list)
+        // A prefilled question (e.g. from the fuel page) starts a fresh chat.
+        if (list.length > 0 && !prefill) void openConversation(list[0].id)
+      })
+      .catch(() => {}) // history is best-effort; chat works without it
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  async function openConversation(id: string) {
+    try {
+      const convo = await api.conversation(id)
+      sessionRef.current = id
+      setActiveId(id)
+      setMessages(convo.messages.map((m) => ({ role: m.role, text: m.text, tools: m.tools })))
+    } catch {
+      /* stale id — leave current view */
+    }
+  }
+
+  function newChat() {
+    sessionRef.current = null
+    setActiveId(null)
+    setMessages([])
+  }
+
+  async function removeConversation() {
+    const id = sessionRef.current
+    if (!id) return
+    try {
+      await api.deleteConversation(id)
+    } catch {
+      /* already gone */
+    }
+    setConversations((c) => c.filter((x) => x.id !== id))
+    newChat()
+  }
 
   async function send(text: string) {
     const question = text.trim()
@@ -85,13 +136,16 @@ export default function Coach() {
             last.tools.at(-1) === event.label ? last : { ...last, tools: [...last.tools, event.label!] },
           )
         } else if (event.type === "done") {
-          if (event.session_id) sessionRef.current = event.session_id
+          if (event.session_id) {
+            sessionRef.current = event.session_id
+            setActiveId(event.session_id)
+          }
           update((last) => ({ ...last, streaming: false }))
         } else if (event.type === "error") {
           update((last) => ({
             ...last,
             streaming: false,
-            text: last.text || `⚠ ${event.message ?? "Something went wrong."}`,
+            text: `${last.text}${last.text ? "\n\n" : ""}⚠ ${event.message ?? "Something went wrong."}`,
           }))
         }
       }
@@ -104,17 +158,53 @@ export default function Coach() {
     } finally {
       setBusy(false)
       update((last) => ({ ...last, streaming: false }))
+      api.conversations().then(setConversations).catch(() => {})
     }
   }
+
+  const active = conversations.find((c) => c.id === activeId)
 
   return (
     <div className="mx-auto flex h-dvh max-w-3xl flex-col p-4 sm:p-6">
       <div className="mb-2">
         <h1 className="text-xl font-semibold tracking-tight">Coach</h1>
         <p className="text-sm text-muted-foreground">
-          Claude with live access to your Garmin data. Advice, not medicine.
+          AI coach with read-only access to your Garmin data. Advice, not medicine.
         </p>
       </div>
+
+      {(conversations.length > 0 || activeId) && (
+        <div className="mb-2 flex items-center gap-2">
+          <Select
+            value={activeId ?? ""}
+            onValueChange={(v) => {
+              if (v) void openConversation(v)
+            }}
+          >
+            <SelectTrigger className="h-8 flex-1 min-w-0 text-xs [&_span]:truncate">
+              <SelectValue>{active ? active.title : "Past conversations…"}</SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {conversations.map((c) => (
+                <SelectItem key={c.id} value={c.id}>
+                  {c.title}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button variant="outline" size="sm" onClick={newChat} disabled={busy}>
+            New chat
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => void removeConversation()}
+            disabled={busy || !activeId}
+          >
+            Delete
+          </Button>
+        </div>
+      )}
 
       <div ref={scrollRef} className="flex-1 space-y-4 overflow-y-auto py-4 pr-1">
         {messages.length === 0 && (

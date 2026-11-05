@@ -1,0 +1,8 @@
+.git
+.venv
+.local
+.env*
+web
+training
+*.db*
+tests

@@ -26,7 +26,9 @@ def reset_client_cache():
 
 
 @pytest.fixture
-def web() -> TestClient:
+def web(monkeypatch: pytest.MonkeyPatch) -> TestClient:
+    monkeypatch.setenv("GARMIN_COACH_ENV", "local")
+    monkeypatch.setenv("GARMIN_COACH_PLAN_DIR", str(Path(__file__).parents[1] / "training"))
     return TestClient(create_app())
 
 
@@ -68,7 +70,7 @@ def test_status_endpoint_bundles_metrics(web: TestClient, monkeypatch: pytest.Mo
     resp = web.get("/api/status")
     assert resp.status_code == 200
     body = resp.json()
-    assert body["ftp"]["ftp_w"] == 290.0
+    assert body["ftp"]["ftp_w"] == 240.0
     assert body["training_status"]["acwr_status"] == "OPTIMAL"
 
 
@@ -88,10 +90,9 @@ def test_sessions_endpoint_serves_structured_plan(web: TestClient):
     body = resp.json()
     assert len(body["weeks"]) == 8
     week1 = body["weeks"][0]
-    assert week1["start"] == "2026-07-20"
+    assert week1["start"] == "2026-06-01"
     assert all("id" in s and "title" in s and "kind" in s for s in week1["sessions"])
-    race = body["weeks"][7]["sessions"][-1]
-    assert race["fixed_date"] == "2026-09-12"
+    assert body["plan"] == "Synthetic endurance example"
 
 
 def test_weather_endpoint(web: TestClient, monkeypatch: pytest.MonkeyPatch):
@@ -108,4 +109,40 @@ def test_plan_endpoint_serves_markdown(web: TestClient):
     resp = web.get("/api/plan")
     assert resp.status_code == 200
     body = resp.json()
-    assert "Whistler" in body["markdown"]
+    assert "Synthetic" in body["markdown"]
+
+
+@pytest.fixture
+def chat_store(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
+    monkeypatch.setenv("GARMIN_COACH_DATA", str(tmp_path))
+    from garmin_coach.web import store
+
+    return store
+
+
+def test_chat_history_endpoints(web: TestClient, chat_store) -> None:
+    chat_store.ensure_conversation("c1", "How was my last ride?")
+    chat_store.append_message("c1", "user", "How was my last ride?")
+    chat_store.append_message("c1", "assistant", "Strong!", ["Looking up recent rides"])
+
+    resp = web.get("/api/chat/conversations")
+    assert resp.status_code == 200
+    conversations = resp.json()
+    assert conversations[0]["title"] == "How was my last ride?"
+    assert conversations[0]["message_count"] == 2
+
+    resp = web.get("/api/chat/conversations/c1")
+    assert resp.status_code == 200
+    messages = resp.json()["messages"]
+    assert [m["role"] for m in messages] == ["user", "assistant"]
+    assert messages[1]["tools"] == ["Looking up recent rides"]
+
+    resp = web.delete("/api/chat/conversations/c1")
+    assert resp.status_code == 200
+    assert web.get("/api/chat/conversations/c1").status_code == 404
+    assert web.get("/api/chat/conversations").json() == []
+
+
+def test_chat_history_unknown_conversation_404s(web: TestClient, chat_store) -> None:
+    assert web.get("/api/chat/conversations/nope").status_code == 404
+    assert web.delete("/api/chat/conversations/nope").status_code == 404

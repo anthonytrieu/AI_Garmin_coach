@@ -1,3 +1,6 @@
+import AuthGate from "@/components/auth-gate"
+import DemoCoach from "@/pages/demo-coach"
+import { DEMO } from "@/lib/mode"
 import { BrowserRouter, Route, Routes } from "react-router-dom"
 import Layout from "@/components/layout"
 import Coach from "@/pages/coach"
@@ -8,8 +11,12 @@ import Schedule from "@/pages/schedule"
 import RideDetail from "@/pages/ride-detail"
 
 export default function App() {
+  return <BrowserRouter>{DEMO ? <AppRoutes /> : <AuthGate><AppRoutes /></AuthGate>}</BrowserRouter>
+}
+
+function AppRoutes() {
   return (
-    <BrowserRouter>
+    <>
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<Dashboard />} />
@@ -17,9 +24,9 @@ export default function App() {
           <Route path="/plan" element={<Plan />} />
           <Route path="/schedule" element={<Schedule />} />
           <Route path="/fuel" element={<Fuel />} />
-          <Route path="/coach" element={<Coach />} />
+          <Route path="/coach" element={DEMO ? <DemoCoach /> : <Coach />} />
         </Route>
       </Routes>
-    </BrowserRouter>
+    </>
   )
 }

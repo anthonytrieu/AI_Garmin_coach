@@ -63,7 +63,7 @@ def test_single_sided_ride_keeps_caveat_and_no_balance() -> None:
     ride = normalize_ride_summaries(load_fixture())[0]
     assert ride.left_balance_pct is None
     assert ride.right_balance_pct is None
-    assert ride.power_note is not None and "single-sided" in ride.power_note
+    assert ride.power_note is not None and "no L/R balance" in ride.power_note
 
 
 def test_missing_optional_fields_do_not_crash() -> None:

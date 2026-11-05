@@ -67,7 +67,7 @@ def test_tool_returns_normalized_dicts(monkeypatch: pytest.MonkeyPatch) -> None:
     assert first["distance_km"] == 46.28
     assert first["normalized_power_w"] == 204.0
     assert first["source"] == "garmin"
-    assert "single-sided" in first["power_note"]
+    assert "no L/R balance" in first["power_note"]
     # raw Garmin keys must not leak through
     assert "activityName" not in first and "startTimeGMT" not in first
 
@@ -243,15 +243,15 @@ def test_plan_context_bundles_all_sections(monkeypatch: pytest.MonkeyPatch) -> N
 
     ctx = server.get_training_plan_context(wellness_days=2)
 
-    assert ctx["ftp"]["ftp_w"] == 290.0
-    assert ctx["vo2max"]["vo2max_cycling"] == 63.7
+    assert ctx["ftp"]["ftp_w"] == 240.0
+    assert ctx["vo2max"]["vo2max_cycling"] == 48.5
     assert ctx["training_status"]["acwr_status"] == "OPTIMAL"
     assert ctx["last_14_days"]["ride_count"] == 2
     assert ctx["last_14_days"]["total_training_load"] == 173.4
     assert len(ctx["recent_sleep"]) == 2
     assert len(ctx["recent_hrv"]) == 2
     assert len(ctx["recent_resting_hr"]) == 2
-    assert any("single-sided" in n for n in ctx["notes"])
+    assert any("no L/R balance" in n for n in ctx["notes"])
     assert any("subjective" in n.lower() for n in ctx["notes"])
 
 
@@ -260,7 +260,7 @@ def test_plan_week_prompt_embeds_user_context() -> None:
     assert "raise FTP to 310" in text
     assert "Tue/Thu/Sat/Sun" in text
     assert "easier alternative" in text.lower()
-    assert "single-sided" in text
+    assert "no L/R balance" in text
     assert "Do not schedule or upload workouts" in text
 
 
