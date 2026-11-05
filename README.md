@@ -1,25 +1,23 @@
 # garmin-coach
 
-Personal cycling training assistant. A local, read-only Python MCP server that wraps
-[python-garminconnect](https://github.com/cyberjunky/python-garminconnect) so Claude can
-analyze rides, recovery and training trends from Garmin Connect — combined with the
-official Strava MCP for Strava-side data.
+An AI-assisted cycling coach that pulls rides, recovery context, and training data from Garmin Connect. A React/Vite dashboard displays the stats, and a Claude Agent SDK chatbot uses read-only Garmin MCP tools to explain them and discuss training.
 
-**Status: Milestone 5** — the local MCP server (`garmin-mcp`) exposes 17 read-only
-tools plus a `plan_week` planning prompt: recent rides, per-activity
-summaries/splits/zones/time-series, activity comparison, recovery context (training
-status, readiness, HRV, sleep, resting HR, VO2 max, FTP), weekly training summaries,
-and a one-call training-plan context bundle.
+## Stack and features
 
-Strava integration (originally Milestone 4) was deliberately skipped: all Strava rides
-originate from the same Garmin recordings, so it added dedup complexity without new
-data. It can be added later via the official Strava MCP if segment/PR analysis becomes
-interesting.
+- Python MCP server wrapping `python-garminconnect`, with a FastAPI backend.
+- React, TypeScript, Vite, Tailwind CSS, and Recharts frontend.
+- Ride summaries, splits, power and heart-rate zones, weekly training trends, and available recovery data.
+- A training schedule, fueling planner, and recorded ride weather plus a Vancouver forecast.
+- Claude Agent SDK chat using a local Claude Code login.
+
+This is a local single-user application, not a public deployment. Strava integration is not implemented; Garmin is the activity data source.
 
 ## Requirements
 
 - Python 3.12+ (developed on 3.14)
 - A Garmin Connect account (MFA supported)
+- Node.js and npm compatible with the frontend Vite version
+- Claude Code installed and signed in for coach chat
 
 ## Setup
 
@@ -41,7 +39,7 @@ saved to `~/.garminconnect` (override with the `GARMINTOKENS` env var; see
 `.env.example`). Sessions auto-refresh; if a session ever fully expires, commands will
 tell you to re-run `garmin-setup`.
 
-## Usage (Milestone 1)
+## Command-line usage
 
 ```bash
 garmin-coach recent-rides            # five most recent cycling activities
@@ -53,19 +51,19 @@ garmin-coach recent-rides --json     # normalized JSON output
 
 The MCP server runs locally over stdio and is read-only.
 
-**Claude Code** (from this project directory):
+**Claude Code** (replace the example path with the absolute path to your checkout):
 
 ```bash
-claude mcp add garmin -- /Users/anthonytrieu/Desktop/garmin/.venv/bin/garmin-mcp
+claude mcp add garmin -- /absolute/path/to/training/.venv/bin/garmin-mcp
 ```
 
-**Claude Desktop** — add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
+**Claude Desktop** — replace the example path below, then add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
 
 ```json
 {
   "mcpServers": {
     "garmin": {
-      "command": "/Users/anthonytrieu/Desktop/garmin/.venv/bin/garmin-mcp"
+      "command": "/absolute/path/to/training/.venv/bin/garmin-mcp"
     }
   }
 }
@@ -156,7 +154,7 @@ rate; sodium to sweat concentration. It warns on >90 g/h without gut training,
 over-drinking vs. sweat loss, and sodium shortfalls.
 
 ```bash
-cd web && npm install && npm run build && cd ..   # build frontend once
+cd web && npm ci && npm run build && cd ..   # build frontend once
 garmin-coach-web                                   # serve everything on http://127.0.0.1:8787
 ```
 
