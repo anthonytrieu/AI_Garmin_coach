@@ -143,7 +143,7 @@ No public account signup, multi-athlete SaaS, billing system, Strava integration
 - [x] User approves implementation.
 - [ ] Phases 0–6 implemented and validated.
 
-Next action: refresh the rejected Garmin session interactively, securely replace the hosted tokens, and verify live Garmin tool calls. Then finish persistence/restart checks and review the draft PR. Do not request credentials in chat.
+Next action: review the draft PR, rotate the chat-shared Groq key directly in Railway, and complete the remaining portfolio polish and broader coaching evaluation. Do not request credentials in chat.
 
 ### Implementation evidence — November 5, 2026
 
@@ -170,3 +170,9 @@ Next action: refresh the rejected Garmin session interactively, securely replace
 - Garmin saved-token login was rejected locally and remotely. User asked to run the private interactive setup in their terminal. Live ride/coaching-tool checks remain blocked on refreshed tokens.
 - Infrastructure imported into `.railway/railway.ts`, preserving the volume and leaving all secrets unmanaged. Applied a nondestructive Dockerfile/health-check plan; replacing deprecated `railway.json`.
 - Backend revalidation: 70 tests, ruff and mypy passed. Hosted long-stream limits, restart persistence/restore, mobile QA, recorded walkthrough, license, and representative coaching quality remain open.
+
+- Follow-up: owner refreshed Garmin interactively; replacement tokens uploaded with existing approval and permissions restricted. Hosted `/api/rides?limit=1` returned HTTP 200 and one ride. Latest GitHub CI passed for both push and PR.
+
+- Final hosted checks: after backend restart, old web session returned 401, synthetic conversation remained accessible (200), and Garmin ride read still returned 200. Disposable conversation/session removed.
+- Owner explicitly approved one Garmin-to-Groq test. It completed with HTTP 200, one tool event, 257 text events, and a completion event; persisted conversation read returned 200 and test conversation was deleted. This verifies integration, not broad coaching quality.
+- Current private deployment: `abadea30-72b1-45e4-a231-df508bb1db77`, successful with Dockerfile, `/healthz`, and `/data` volume. IaC plan still reports builder null-to-DOCKERFILE drift although deployed manifest confirms DOCKERFILE; no destructive changes applied.

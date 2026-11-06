@@ -45,7 +45,7 @@ This writes ignored `web/vercel.personal.json`. Deploy this project with Vercel 
 5. Confirm Garmin reads work without exposing tokens, and chats survive backend restart. Restart should revoke the web session.
 6. Confirm demo traffic never calls `/api` or external providers.
 
-Hosted owner login/logout, cookie flags, origin rejection, and a short live Groq streamed reply passed on November 5, 2026. Garmin rejected the saved session both locally and remotely; interactive login is required before live ride/tool evaluation. Long-running proxy timeouts, volume restore, and model quality remain unverified. The application imposes a 100-second overall reply timeout; platform proxy limits may be lower. Shorten the request budget if deployment tests require it.
+Hosted owner login/logout, cookie flags, origin rejection, and a short live Groq streamed reply passed on November 5, 2026. After interactive reauthentication, a live Garmin ride read returned HTTP 200 through the private frontend. A live Garmin tool-assisted Groq response also completed. A backend restart preserved the synthetic chat and Garmin access and revoked the previous web session. Long-running proxy timeouts, volume restore, and broader model quality remain unverified. The application imposes a 100-second overall reply timeout; platform proxy limits may be lower. Shorten the request budget if deployment tests require it.
 
 ## Costs and data
 
