@@ -5,7 +5,7 @@ description = "Personal cycling training assistant: local read-only Garmin MCP s
 requires-python = ">=3.12"
 dependencies = [
     "garminconnect>=0.3.6",
-    "mcp>=1.2",
+    "mcp>=1.28.1,<2",
     "fastapi>=0.115",
     "uvicorn[standard]>=0.30",
     "httpx>=0.28,<1",

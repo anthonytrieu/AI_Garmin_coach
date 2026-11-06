@@ -1,7 +1,7 @@
 # Garmin Coach: portfolio and deployment plan
 
 Created: November 4, 2026 (America/Vancouver).
-Status: **Implementation approved November 5, 2026. Public demo deployed; private hosting awaits activation and secrets.**
+Status: **Implementation approved November 5, 2026. Public demo deployed; Railway activation approved, private setup in progress.**
 Repository: https://github.com/anthonytrieu/AI_Garmin_coach
 
 ## Purpose and approval boundary
@@ -143,7 +143,7 @@ No public account signup, multi-athlete SaaS, billing system, Strava integration
 - [x] User approves implementation.
 - [ ] Phases 0–6 implemented and validated.
 
-Next action: finish review/merge of the implementation branch, then activate the private Railway deployment only after the owner decides on additional usage. Configure Groq and Garmin through private hosting settings/operator access, and run the hosted checks. Do not request API keys in chat.
+Next action: finish review/merge of the implementation branch, then finish the private Railway deployment (additional usage approved). Configure Groq and Garmin through private hosting settings/operator access, and run the hosted checks. Do not request API keys in chat.
 
 ### Implementation evidence — November 5, 2026
 
@@ -158,3 +158,5 @@ Next action: finish review/merge of the implementation branch, then activate the
 - No Railway service was activated, no real Groq call made, no Garmin tokens uploaded, and no public Git history rewritten during this implementation.
 - Authentication decision: bounded, random opaque owner sessions implemented with FastAPI/Starlette; no custom cryptography or third-party identity service. See architecture tradeoffs. Restart revokes sessions, and one process/replica is required.
 - Real model-quality evaluation, hosted proxy streaming/cookies, persistent-volume restart/restore, Garmin reconnection, license selection, and historical personal-data remediation remain open. Threading timeouts cannot forcibly terminate an already-running Garmin library request.
+
+- Follow-up: owner approved Railway usage under the existing plan. Project `GarminCoach` and empty service `coach-api` created. Initial CI caught an unbounded MCP dependency upgrading to incompatible v2; constrained to the tested v1 API (`>=1.28.1,<2`).
