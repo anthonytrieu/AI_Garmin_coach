@@ -6,7 +6,7 @@ Import `anthonytrieu/AI_Garmin_coach`; use root directory `web`, Vite framework,
 
 ## Private Railway backend
 
-Use the repository root and included Dockerfile. One replica and one worker. Attach a persistent volume at `/data` before starting. Configure variables directly in Railway:
+Use the repository root and included Dockerfile. Infrastructure is defined in `.railway/railway.ts`; run `npm ci`, link the intended Railway project/service, and review `npm run infra:plan` before `npm run infra:apply`. Variables remain unmanaged and must be configured privately. Source deployment (`railway up`) is separate from infrastructure changes. One replica and one worker. Attach a persistent volume at `/data` before starting. Configure variables directly in Railway:
 
 | Variable | Value |
 | --- | --- |
@@ -14,7 +14,7 @@ Use the repository root and included Dockerfile. One replica and one worker. Att
 | `COACH_ORIGIN` | Exact personal Vercel origin, e.g. `https://your-personal-project.vercel.app` (no trailing slash) |
 | `COACH_PASSWORD` | Random secret of at least 24 characters, saved in a password manager |
 | `GROQ_API_KEY` | Your Groq key, server only |
-| `GROQ_MODEL` | `llama-3.3-70b-versatile`, subject to account availability |
+| `GROQ_MODEL` | `openai/gpt-oss-120b`, subject to account availability |
 | `GARMIN_COACH_DATA` | `/data/coach` |
 | `GARMINTOKENS` | `/data/garmin` |
 | `GARMIN_COACH_PROFILE` | `/data/private/athlete.md` |
@@ -45,7 +45,7 @@ This writes ignored `web/vercel.personal.json`. Deploy this project with Vercel 
 5. Confirm Garmin reads work without exposing tokens, and chats survive backend restart. Restart should revoke the web session.
 6. Confirm demo traffic never calls `/api` or external providers.
 
-Hosted cookie/streaming/timeout behavior and real Groq model quality remain unverified until account provisioning is complete. The application imposes a 100-second overall reply timeout; platform proxy limits may be lower. Shorten the request budget if deployment tests require it.
+Hosted owner login/logout, cookie flags, origin rejection, and a short live Groq streamed reply passed on November 5, 2026. Garmin rejected the saved session both locally and remotely; interactive login is required before live ride/tool evaluation. Long-running proxy timeouts, volume restore, and model quality remain unverified. The application imposes a 100-second overall reply timeout; platform proxy limits may be lower. Shorten the request budget if deployment tests require it.
 
 ## Costs and data
 
@@ -58,3 +58,13 @@ Groq receives bounded chat history, athlete/plan context and selected tool resul
 Use Railway volume backups before changes. For a portable SQLite backup, use SQLite's backup API in an authenticated operator shell; do not copy a database while a write may be in progress. Back up Garmin tokens and private profile/plan files through secure storage with restrictive permissions. Never attach these backups to GitHub issues/releases.
 
 Test restore in an isolated private environment: restore the volume data, start the same compatible application revision, log in again, and verify chat history and Garmin access. Roll back code via the previous Railway deployment and Vercel deployment; preserve the volume. This release preserves the existing transcript schema. Avoid running a future incompatible schema migration without a backup and tested rollback.
+
+## Current release
+
+- Public synthetic demo: https://garmin-coach-demo.vercel.app
+- Private owner app: https://garmin-coach-personal.vercel.app
+- Backend health: https://coach-api-production-a667.up.railway.app/healthz
+- Owner password is in ignored `.local/owner-password.txt`; move it to your password manager.
+- Garmin tokens, athlete profile and training plans were transferred to the private volume with explicit owner approval. Files use owner-only permissions. Refresh rejected Garmin sessions using `garmin-setup`, then securely replace the volume tokens.
+- The selected model is `openai/gpt-oss-120b`, confirmed available via this account's Models API. The initial Llama model was unavailable. Model availability and quotas can change; consult [Groq models](https://console.groq.com/docs/models). No billing or paid fallback was enabled.
+- Rotate the Groq key shared in chat and replace `GROQ_API_KEY` directly in Railway.

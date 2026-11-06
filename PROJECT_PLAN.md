@@ -97,7 +97,7 @@ Done when: the private coach works without a local Claude login, uses real tool 
 ## Phase 5 — Prepare and deploy
 
 - [x] Add reproducible backend packaging/startup, health checks, and Railway volume configuration. Include required training/config assets explicitly.
-- [ ] Configure separate Vercel demo and personal deployments, SPA routing, and private API forwarding. Verify repository root settings rather than assuming the local parent folders exist in GitHub.
+- [x] Configure separate Vercel demo and personal deployments, SPA routing, and private API forwarding. Verify repository root settings rather than assuming the local parent folders exist in GitHub.
 - [x] Document environment variables and secure Garmin provisioning; prevent private credentials reaching preview deployments.
 - [ ] Verify streamed chat through the complete Vercel/Railway route, including platform timeout limits.
 - [x] Recheck current hosting allowances and AI quotas. Use the existing Railway workspace where appropriate, but do not assume hosting is free or that each app gets separate included credits.
@@ -143,7 +143,7 @@ No public account signup, multi-athlete SaaS, billing system, Strava integration
 - [x] User approves implementation.
 - [ ] Phases 0–6 implemented and validated.
 
-Next action: finish review/merge of the implementation branch, then finish the private Railway deployment (additional usage approved). Configure Groq and Garmin through private hosting settings/operator access, and run the hosted checks. Do not request API keys in chat.
+Next action: refresh the rejected Garmin session interactively, securely replace the hosted tokens, and verify live Garmin tool calls. Then finish persistence/restart checks and review the draft PR. Do not request credentials in chat.
 
 ### Implementation evidence — November 5, 2026
 
@@ -155,8 +155,18 @@ Next action: finish review/merge of the implementation branch, then finish the p
 - Browser checked dashboard, ride details, schedule assignment + reload persistence, fueling page, and labeled coach example selection. Desktop screenshot saved under `docs/screenshots/`. Mobile viewport checks and a recorded walkthrough remain outstanding.
 - Fixed date-only labels shifting a day across timezones and a pre-existing fueling bug that dropped servings when reminders were fewer than servings. Timeline totals now agree with summary totals.
 - Public demo deployed and verified anonymously: https://garmin-coach-demo.vercel.app (dashboard and direct `/schedule` return HTTP 200). Vercel project: `alextrieus-projects/garmin-coach-demo`; deployment `dpl_D2NjBmEo3LVJVdTRo4u2huzWW9cs`.
-- No Railway service was activated, no real Groq call made, no Garmin tokens uploaded, and no public Git history rewritten during this implementation.
+- Initial public-demo milestone did not activate Railway. Subsequent private deployment and explicit transfer approvals are recorded below. Public Git history has not been rewritten.
 - Authentication decision: bounded, random opaque owner sessions implemented with FastAPI/Starlette; no custom cryptography or third-party identity service. See architecture tradeoffs. Restart revokes sessions, and one process/replica is required.
 - Real model-quality evaluation, hosted proxy streaming/cookies, persistent-volume restart/restore, Garmin reconnection, license selection, and historical personal-data remediation remain open. Threading timeouts cannot forcibly terminate an already-running Garmin library request.
 
 - Follow-up: owner approved Railway usage under the existing plan. Project `GarminCoach` and empty service `coach-api` created. Initial CI caught an unbounded MCP dependency upgrading to incompatible v2; constrained to the tested v1 API (`>=1.28.1,<2`).
+
+### Private deployment follow-up — November 5, 2026
+
+- Owner approved existing-plan Railway usage, registering the existing SSH public key, Garmin-token transfer, and private profile/plan transfer. All completed; secrets were excluded from repository and deployment source bundles.
+- Private app deployed at https://garmin-coach-personal.vercel.app with API forwarding to the private Railway service. Volume is mounted at `/data`; uploaded token/profile/plan files have restrictive permissions.
+- Hosted checks passed: anonymous session 401, owner login 200, Secure/HttpOnly/SameSite=Strict cookie, authenticated session 200, incorrect Origin 403, logout 200, and revoked session 401.
+- Real Groq stream passed through Vercel: HTTP 200, 13 text events and completion; disposable test conversation removed. Initial Llama model unavailable to account; selected available `openai/gpt-oss-120b`. No billing changes or paid fallback. Rotate chat-shared Groq key directly in Railway.
+- Garmin saved-token login was rejected locally and remotely. User asked to run the private interactive setup in their terminal. Live ride/coaching-tool checks remain blocked on refreshed tokens.
+- Infrastructure imported into `.railway/railway.ts`, preserving the volume and leaving all secrets unmanaged. Applied a nondestructive Dockerfile/health-check plan; replacing deprecated `railway.json`.
+- Backend revalidation: 70 tests, ruff and mypy passed. Hosted long-stream limits, restart persistence/restore, mobile QA, recorded walkthrough, license, and representative coaching quality remain open.

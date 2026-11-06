@@ -145,7 +145,7 @@ async def _events(req: ChatRequest) -> AsyncIterator[str]:
                         "https://api.groq.com/openai/v1/chat/completions",
                         headers={"Authorization": "Bearer " + os.environ["GROQ_API_KEY"]},
                         json={
-                            "model": os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile"),
+                            "model": os.getenv("GROQ_MODEL", "openai/gpt-oss-120b"),
                             "messages": messages,
                             "tools": tools_schema(),
                             "max_completion_tokens": 1200,

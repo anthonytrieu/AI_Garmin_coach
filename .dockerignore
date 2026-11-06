@@ -6,3 +6,6 @@ web
 training
 *.db*
 tests
+
+node_modules
+.railway
