@@ -4,11 +4,11 @@ version = "0.1.0"
 description = "Personal cycling training assistant: local read-only Garmin MCP server"
 requires-python = ">=3.12"
 dependencies = [
-    "garminconnect>=0.3.6",
-    "mcp>=1.2",
+    "garminconnect==0.3.6",
+    "mcp>=1.28.1,<2",
     "fastapi>=0.115",
     "uvicorn[standard]>=0.30",
-    "claude-agent-sdk>=0.2",
+    "httpx>=0.28,<1",
 ]
 
 [project.optional-dependencies]

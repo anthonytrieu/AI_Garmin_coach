@@ -1,3 +1,4 @@
+import { DEMO, DEMO_TODAY, storageKey } from "@/lib/mode"
 import { useEffect, useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { ErrorNote, useApi } from "@/components/data-state"
@@ -18,7 +19,7 @@ interface SessionDef {
   fixed_date?: string
 }
 
-const STORAGE_KEY = "garmin-coach-schedule"
+const STORAGE_KEY = storageKey("schedule")
 const DAY_NAMES = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 
 const KIND_STYLE: Record<SessionDef["kind"], string> = {
@@ -41,13 +42,13 @@ function loadAssignments(): Assignments {
 }
 
 function isoAddDays(iso: string, days: number): string {
-  const d = new Date(`${iso}T00:00:00`)
-  d.setDate(d.getDate() + days)
+  const d = new Date(`${iso}T12:00:00Z`)
+  d.setUTCDate(d.getUTCDate() + days)
   return d.toISOString().slice(0, 10)
 }
 
 function todayIso(): string {
-  return new Date().toISOString().slice(0, 10)
+  return DEMO ? DEMO_TODAY : new Date().toISOString().slice(0, 10)
 }
 
 function SessionCard({
@@ -214,7 +215,7 @@ export default function Schedule() {
         </Button>
         <div className="text-center">
           <div className="text-sm font-semibold">
-            Week {week.week} of 8 · {week.start} → {isoAddDays(week.start, 6)}
+            Week {week.week} of {plan.data.weeks.length} · {week.start} → {isoAddDays(week.start, 6)}
           </div>
           <div className="text-xs text-muted-foreground">{week.focus}</div>
         </div>
@@ -224,7 +225,7 @@ export default function Schedule() {
           disabled={weekIdx === plan.data.weeks.length - 1}
           onClick={() => setWeekIdx((i) => (i ?? 0) + 1)}
         >
-          Week {week.week + 1 <= 8 ? week.week + 1 : ""} ›
+          Week {week.week + 1 <= plan.data.weeks.length ? week.week + 1 : ""} ›
         </Button>
       </div>
 
@@ -316,7 +317,7 @@ export default function Schedule() {
       <p className="text-xs text-muted-foreground">
         Guidance: keep an easy day between the interval and tempo sessions, and protect the
         long ride — if life intervenes, drop anything but that one. Dashed entries are rides
-        already recorded on Garmin. The race is locked to Sep 12.
+        already recorded on Garmin. Event dates, when present, are fixed by the plan.
       </p>
     </div>
   )

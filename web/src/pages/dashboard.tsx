@@ -1,3 +1,4 @@
+import { DEMO } from "@/lib/mode"
 import { Link } from "react-router-dom"
 import { BalanceTrend, Sparkline, WeeklyBars } from "@/components/charts"
 import { ChartSkeleton, ErrorNote, useApi } from "@/components/data-state"
@@ -63,7 +64,7 @@ export default function Dashboard() {
       <div>
         <h1 className="text-xl font-semibold tracking-tight">Training dashboard</h1>
         <p className="text-sm text-muted-foreground">
-          Live from Garmin Connect · power values from a single-sided meter
+          {DEMO ? "Invented rides and recovery trends for an example cyclist" : "Live from Garmin Connect · check each ride for power-meter provenance"}
         </p>
       </div>
 
@@ -289,8 +290,7 @@ export default function Dashboard() {
             <ChartSkeleton height={240} />
           )}
           <p className="mt-2 text-xs text-muted-foreground">
-            *NP is Garmin-reported. Power is from a dual-sided Rally meter since Jul 24,
-            2026; earlier rides used a single-sided meter (left-leg doubled).
+            {DEMO ? "All values are synthetic examples, including normalized power (NP)." : "NP is Garmin-reported. Check each ride’s power note before comparing meters."}
           </p>
         </CardContent>
       </Card>

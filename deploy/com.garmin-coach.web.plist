@@ -6,17 +6,17 @@
     <string>com.garmin-coach.web</string>
     <key>ProgramArguments</key>
     <array>
-        <string>/Users/anthonytrieu/Desktop/garmin/.venv/bin/garmin-coach-web</string>
+        <string>/absolute/path/to/AI_Garmin_coach/.venv/bin/garmin-coach-web</string>
     </array>
     <key>WorkingDirectory</key>
-    <string>/Users/anthonytrieu/Desktop/garmin</string>
+    <string>/absolute/path/to/AI_Garmin_coach</string>
     <key>RunAtLoad</key>
     <true/>
     <key>KeepAlive</key>
     <true/>
     <key>StandardOutPath</key>
-    <string>/Users/anthonytrieu/Library/Logs/garmin-coach.log</string>
+    <string>/absolute/path/to/home/Library/Logs/garmin-coach.log</string>
     <key>StandardErrorPath</key>
-    <string>/Users/anthonytrieu/Library/Logs/garmin-coach.log</string>
+    <string>/absolute/path/to/home/Library/Logs/garmin-coach.log</string>
 </dict>
 </plist>

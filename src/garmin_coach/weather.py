@@ -6,15 +6,13 @@ per-ride weather comes from Garmin instead (see normalize_activity_weather).
 
 from __future__ import annotations
 
+import os
 import time
 from typing import Any
 
 import requests
 
-# Vancouver — right for all current riding/courses.
-LATITUDE = 49.26
-LONGITUDE = -123.11
-TIMEZONE = "America/Vancouver"
+TIMEZONE = os.getenv("WEATHER_TIMEZONE", "UTC")
 
 FORECAST_URL = "https://api.open-meteo.com/v1/forecast"
 CACHE_TTL_S = 30 * 60
@@ -63,9 +61,11 @@ def _describe(code: Any) -> str | None:
 
 
 def _fetch_raw() -> dict[str, Any]:
+    if not os.getenv("WEATHER_LATITUDE") or not os.getenv("WEATHER_LONGITUDE"):
+        raise WeatherUnavailableError("Configure a forecast location to enable weather")
     params: dict[str, str | float | int] = {
-        "latitude": LATITUDE,
-        "longitude": LONGITUDE,
+        "latitude": float(os.environ["WEATHER_LATITUDE"]),
+        "longitude": float(os.environ["WEATHER_LONGITUDE"]),
         "timezone": TIMEZONE,
         "forecast_days": 7,
         "daily": (
@@ -123,7 +123,7 @@ def get_forecast(days: int = 5, fetch: Any = None) -> dict[str, Any]:
     ]
 
     return {
-        "location": "Vancouver, BC",
+        "location": os.getenv("WEATHER_LOCATION", "Configured forecast location"),
         "timezone": TIMEZONE,
         "daily": daily,
         "next_36h": hourly,

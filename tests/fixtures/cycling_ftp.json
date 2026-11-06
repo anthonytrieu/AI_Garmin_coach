@@ -5,6 +5,6 @@
  "isStale": false,
  "sequence": 1783745072700,
  "sport": "CYCLING",
- "functionalThresholdPower": 290,
+ "functionalThresholdPower": 240,
  "biometricSourceType": "CHANGE_LOG"
 }

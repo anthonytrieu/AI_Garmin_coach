@@ -27,6 +27,8 @@ def main() -> int:
     logging.getLogger("garth").setLevel(logging.ERROR)
 
     tokens = token_store_path()
+    tokens.mkdir(parents=True, exist_ok=True, mode=0o700)
+    tokens.chmod(0o700)
     print("Garmin Connect setup")
     print("Your email and password are used once to obtain OAuth tokens and are not stored.")
     print(f"Tokens will be saved to: {tokens}\n")
@@ -57,6 +59,9 @@ def main() -> int:
         print(f"Could not reach Garmin Connect: {e}", file=sys.stderr)
         return 1
 
+    for token in tokens.iterdir():
+        if token.is_file():
+            token.chmod(0o600)
     name = api.get_full_name() or "your Garmin account"
     print(f"\nLogged in as {name}.")
     print(f"Tokens saved to {tokens} — future commands will reuse them automatically.")

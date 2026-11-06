@@ -4,7 +4,7 @@
  "activityTypeDTO": {
   "typeKey": "road_biking"
  },
- "locationName": "Vancouver",
+ "locationName": "Example City",
  "summaryDTO": {
   "startTimeLocal": "2026-07-25T10:01:19.0",
   "startTimeGMT": "2026-07-25T17:01:19.0",

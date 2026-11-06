@@ -1,0 +1,11 @@
+{
+  "name": "garmin-coach-infrastructure",
+  "private": true,
+  "scripts": {
+    "infra:plan": "npx --yes @railway/cli config plan",
+    "infra:apply": "npx --yes @railway/cli config apply"
+  },
+  "devDependencies": {
+    "railway": "^3.16.0"
+  }
+}

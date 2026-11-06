@@ -1,6 +1,6 @@
 {
  "activityId": 100000001,
- "activityName": "Vancouver Road Cycling",
+ "activityName": "Example City Road Cycling",
  "activityTypeDTO": {
   "typeId": 10,
   "typeKey": "road_biking",
@@ -9,7 +9,7 @@
   "restricted": false,
   "trimmable": true
  },
- "locationName": "Vancouver",
+ "locationName": "Example City",
  "summaryDTO": {
   "startTimeLocal": "2026-07-16T08:00:15.0",
   "startTimeGMT": "2026-07-16T15:00:15.0",
@@ -42,7 +42,7 @@
   "maxPowerTwentyMinutes": 137.63333333333333,
   "minPower": 0.0,
   "normalizedPower": 141.0,
-  "functionalThresholdPower": 290.0,
+  "functionalThresholdPower": 240.0,
   "totalWork": 126.49104300218139,
   "trainingEffect": 2.9000000953674316,
   "anaerobicTrainingEffect": 2.0999999046325684,

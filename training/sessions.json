@@ -1,0 +1,199 @@
+{
+  "plan": "Synthetic endurance example",
+  "event_date": "2026-07-25",
+  "note": "Invented example, not a prescription.",
+  "weeks": [
+    {
+      "week": 1,
+      "start": "2026-06-01",
+      "focus": "Build consistency",
+      "sessions": [
+        {
+          "id": "w0-easy",
+          "title": "Easy spin",
+          "kind": "easy",
+          "duration_min": 45,
+          "target": "Conversational",
+          "detail": "Ride comfortably."
+        },
+        {
+          "id": "w0-long",
+          "title": "Endurance ride",
+          "kind": "long",
+          "duration_min": 150,
+          "target": "60\u201370% of current FTP",
+          "detail": "Practise a familiar fueling routine.",
+          "alt": "90 minutes easy"
+        }
+      ]
+    },
+    {
+      "week": 2,
+      "start": "2026-06-08",
+      "focus": "Build consistency",
+      "sessions": [
+        {
+          "id": "w1-easy",
+          "title": "Easy spin",
+          "kind": "easy",
+          "duration_min": 45,
+          "target": "Conversational",
+          "detail": "Ride comfortably."
+        },
+        {
+          "id": "w1-long",
+          "title": "Endurance ride",
+          "kind": "long",
+          "duration_min": 150,
+          "target": "60\u201370% of current FTP",
+          "detail": "Practise a familiar fueling routine.",
+          "alt": "90 minutes easy"
+        }
+      ]
+    },
+    {
+      "week": 3,
+      "start": "2026-06-15",
+      "focus": "Build consistency",
+      "sessions": [
+        {
+          "id": "w2-easy",
+          "title": "Easy spin",
+          "kind": "easy",
+          "duration_min": 45,
+          "target": "Conversational",
+          "detail": "Ride comfortably."
+        },
+        {
+          "id": "w2-long",
+          "title": "Endurance ride",
+          "kind": "long",
+          "duration_min": 150,
+          "target": "60\u201370% of current FTP",
+          "detail": "Practise a familiar fueling routine.",
+          "alt": "90 minutes easy"
+        }
+      ]
+    },
+    {
+      "week": 4,
+      "start": "2026-06-22",
+      "focus": "Build consistency",
+      "sessions": [
+        {
+          "id": "w3-easy",
+          "title": "Easy spin",
+          "kind": "easy",
+          "duration_min": 45,
+          "target": "Conversational",
+          "detail": "Ride comfortably."
+        },
+        {
+          "id": "w3-long",
+          "title": "Endurance ride",
+          "kind": "long",
+          "duration_min": 150,
+          "target": "60\u201370% of current FTP",
+          "detail": "Practise a familiar fueling routine.",
+          "alt": "90 minutes easy"
+        }
+      ]
+    },
+    {
+      "week": 5,
+      "start": "2026-06-29",
+      "focus": "Build consistency",
+      "sessions": [
+        {
+          "id": "w4-easy",
+          "title": "Easy spin",
+          "kind": "easy",
+          "duration_min": 45,
+          "target": "Conversational",
+          "detail": "Ride comfortably."
+        },
+        {
+          "id": "w4-long",
+          "title": "Endurance ride",
+          "kind": "long",
+          "duration_min": 150,
+          "target": "60\u201370% of current FTP",
+          "detail": "Practise a familiar fueling routine.",
+          "alt": "90 minutes easy"
+        }
+      ]
+    },
+    {
+      "week": 6,
+      "start": "2026-07-06",
+      "focus": "Build consistency",
+      "sessions": [
+        {
+          "id": "w5-easy",
+          "title": "Easy spin",
+          "kind": "easy",
+          "duration_min": 45,
+          "target": "Conversational",
+          "detail": "Ride comfortably."
+        },
+        {
+          "id": "w5-long",
+          "title": "Endurance ride",
+          "kind": "long",
+          "duration_min": 150,
+          "target": "60\u201370% of current FTP",
+          "detail": "Practise a familiar fueling routine.",
+          "alt": "90 minutes easy"
+        }
+      ]
+    },
+    {
+      "week": 7,
+      "start": "2026-07-13",
+      "focus": "Build consistency",
+      "sessions": [
+        {
+          "id": "w6-easy",
+          "title": "Easy spin",
+          "kind": "easy",
+          "duration_min": 45,
+          "target": "Conversational",
+          "detail": "Ride comfortably."
+        },
+        {
+          "id": "w6-long",
+          "title": "Endurance ride",
+          "kind": "long",
+          "duration_min": 150,
+          "target": "60\u201370% of current FTP",
+          "detail": "Practise a familiar fueling routine.",
+          "alt": "90 minutes easy"
+        }
+      ]
+    },
+    {
+      "week": 8,
+      "start": "2026-07-20",
+      "focus": "Build consistency",
+      "sessions": [
+        {
+          "id": "w7-easy",
+          "title": "Easy spin",
+          "kind": "easy",
+          "duration_min": 45,
+          "target": "Conversational",
+          "detail": "Ride comfortably."
+        },
+        {
+          "id": "w7-long",
+          "title": "Endurance ride",
+          "kind": "long",
+          "duration_min": 150,
+          "target": "60\u201370% of current FTP",
+          "detail": "Practise a familiar fueling routine.",
+          "alt": "90 minutes easy"
+        }
+      ]
+    }
+  ]
+}

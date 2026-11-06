@@ -27,9 +27,9 @@ def load(name: str) -> Any:
 def test_activity_summary_includes_garmin_reported_intensity_metrics() -> None:
     s = normalize_activity_summary(load("activity_summary.json"))
     assert s["activity_id"] == 100000001
-    assert s["location"] == "Vancouver"
+    assert s["location"] == "Example City"
     assert s["distance_km"] == 34.27
-    assert s["ftp_at_ride_w"] == 290.0
+    assert s["ftp_at_ride_w"] == 240.0
     assert s["intensity_factor"] == 0.485
     assert s["training_stress_score"] == 45.3
     assert s["max_power_20min_w"] == 137.6
@@ -38,7 +38,7 @@ def test_activity_summary_includes_garmin_reported_intensity_metrics() -> None:
     assert s["min_hr_bpm"] == 70.0
     assert s["end_stamina_pct"] == 81.0
     assert "Garmin-reported" in s["garmin_reported_note"]
-    assert "single-sided" in s["power_note"]
+    assert "no L/R balance" in s["power_note"]
     assert s["source"] == "garmin"
 
 
@@ -89,7 +89,7 @@ def test_training_status_picks_primary_device() -> None:
     assert s["acwr_status"] == "OPTIMAL"
     assert s["monthly_load_aerobic_low"] == 1102.2
     assert s["load_balance_phrase"] == "AEROBIC_LOW_FOCUS"
-    assert s["vo2max_cycling"] == 63.7
+    assert s["vo2max_cycling"] == 48.5
     assert s["training_paused"] is False
 
 
@@ -142,15 +142,15 @@ def test_rhr_daily_none_when_missing() -> None:
 
 def test_vo2max() -> None:
     v = normalize_vo2max(load("max_metrics.json"), "2026-07-16")
-    assert v["vo2max_cycling"] == 63.7
+    assert v["vo2max_cycling"] == 48.5
     assert v["fitness_age"] == 20.0
 
 
 def test_ftp() -> None:
     f = normalize_ftp(load("cycling_ftp.json"))
-    assert f["ftp_w"] == 290.0
+    assert f["ftp_w"] == 240.0
     assert f["is_stale"] is False
-    assert "dual-sided since 2026-07-24" in f["power_note"]
+    assert "verify power-meter provenance" in f["power_note"]
 
 
 def test_dual_sided_summary_exposes_balance_without_caveat() -> None:
@@ -164,7 +164,7 @@ def test_dual_sided_summary_exposes_balance_without_caveat() -> None:
 def test_single_sided_summary_keeps_caveat() -> None:
     s = normalize_activity_summary(load("activity_summary.json"))
     assert s["left_balance_pct"] is None
-    assert "single-sided" in s["power_note"]
+    assert "no L/R balance" in s["power_note"]
 
 
 def test_courses_normalized_longest_first() -> None:

@@ -1,3 +1,5 @@
+import { DEMO } from "./mode"
+import { demoGet } from "./demo"
 export class ApiError extends Error {
   status: number
   constructor(status: number, detail: string) {
@@ -7,6 +9,7 @@ export class ApiError extends Error {
 }
 
 async function apiGet<T>(path: string): Promise<T> {
+  if (DEMO) return demoGet(path) as Promise<T>
   const resp = await fetch(path)
   if (!resp.ok) {
     let detail = `Request failed (${resp.status})`
@@ -194,6 +197,31 @@ export interface RideWeather {
   wind_direction: string | null
 }
 
+export interface ConversationSummary {
+  id: string
+  title: string
+  updated_at: string
+  message_count: number
+}
+
+export interface StoredMessage {
+  role: "user" | "assistant"
+  text: string
+  tools: string[]
+  created_at: string
+}
+
+export interface ConversationDetail {
+  id: string
+  title: string
+  messages: StoredMessage[]
+}
+
+async function apiDelete(path: string): Promise<void> {
+  const resp = await fetch(path, { method: "DELETE" })
+  if (!resp.ok) throw new ApiError(resp.status, `Delete failed (${resp.status})`)
+}
+
 export const api = {
   weather: (days = 7) => apiGet<ForecastResponse>(`/api/weather?days=${days}`),
   courses: () => apiGet<Course[]>(`/api/courses`),
@@ -205,4 +233,8 @@ export const api = {
   wellness: (days = 7) => apiGet<WellnessResponse>(`/api/wellness?days=${days}`),
   status: () => apiGet<StatusResponse>(`/api/status`),
   plan: () => apiGet<{ name: string; markdown: string }>(`/api/plan`),
+  conversations: () => apiGet<ConversationSummary[]>(`/api/chat/conversations`),
+  conversation: (id: string) =>
+    apiGet<ConversationDetail>(`/api/chat/conversations/${id}`),
+  deleteConversation: (id: string) => apiDelete(`/api/chat/conversations/${id}`),
 }

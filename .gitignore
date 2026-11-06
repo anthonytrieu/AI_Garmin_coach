@@ -25,3 +25,18 @@ build/
 # Frontend
 web/node_modules/
 web/dist/
+
+# Private configuration and persistent data
+.local/
+*.db
+*.db-*
+*.sqlite*
+exports/
+playwright-report/
+test-results/
+.vercel/
+web/vercel.personal.json
+
+web/dist-personal/
+
+node_modules/

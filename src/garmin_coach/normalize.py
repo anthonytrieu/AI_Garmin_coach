@@ -10,7 +10,7 @@ from __future__ import annotations
 from datetime import UTC, date, datetime, timedelta
 from typing import Any
 
-from .models import DUAL_SIDED_SINCE, SINGLE_SIDED_POWER_NOTE, SOURCE_GARMIN, RideSummary
+from .models import SINGLE_SIDED_POWER_NOTE, SOURCE_GARMIN, RideSummary
 
 
 def _num(raw: dict[str, Any], *keys: str) -> float | None:
@@ -74,7 +74,7 @@ def normalize_ride_summary(raw: dict[str, Any]) -> RideSummary:
         aerobic_training_effect=_round(_num(raw, "aerobicTrainingEffect")),
         anaerobic_training_effect=_round(_num(raw, "anaerobicTrainingEffect")),
         # Balance present = dual-sided meter; power without balance = the legacy
-        # single-sided era (pre 2026-07-24), which keeps its caveat.
+        # records without balance data retain an availability caveat.
         power_note=(
             SINGLE_SIDED_POWER_NOTE if avg_power is not None and left_balance is None else None
         ),
@@ -451,8 +451,7 @@ def normalize_ftp(raw: dict[str, Any]) -> dict[str, Any]:
         "source_type": raw.get("biometricSourceType"),
         "source": SOURCE_GARMIN,
         "power_note": (
-            f"power meter is dual-sided since {DUAL_SIDED_SINCE}; "
-            "earlier rides used a single-sided (left-doubled) meter"
+            "FTP is Garmin-reported; verify power-meter provenance on each ride"
         ),
     }
 

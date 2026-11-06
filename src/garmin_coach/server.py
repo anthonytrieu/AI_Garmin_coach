@@ -49,11 +49,8 @@ mcp = FastMCP(
     instructions=(
         "Read-only access to the user's Garmin Connect cycling data. "
         "All values are normalized with units in field names and ISO-8601 timestamps; "
-        "`source` marks provenance. Power meter history: dual-sided Rally since "
-        "2026-07-24 — those rides carry left/right_balance_pct and L/R discussion is "
-        "fine. Earlier rides used a single-sided (left-doubled) meter and carry a "
-        "power_note saying so: never infer balance for them, and treat their watts "
-        "as approximate when comparing across the meter change."
+        "`source` marks provenance. Check per-ride balance fields and power notes. "
+        "Never infer left/right balance when the recorded data does not expose it."
     ),
     log_level="WARNING",
 )
@@ -113,8 +110,8 @@ def get_recent_activities(limit: int = 5) -> list[dict[str, Any]]:
     avg/max power_w, normalized_power_w (Garmin-reported, not locally calculated),
     avg/max hr_bpm, avg_cadence_rpm, calories_kcal, training_load, training effects,
     ISO-8601 start times, and source provenance. Missing sensor data is null, never
-    guessed. Dual-sided rides (since 2026-07-24) include left/right_balance_pct;
-    older single-sided rides carry the caveat in power_note instead.
+    guessed. Rides with balance data include left/right_balance_pct;
+    other rides carry an availability caveat in power_note.
     """
     limit = max(1, min(int(limit), MAX_LIMIT))
     raw = _call(lambda c: c.recent_cycling_activities(limit=limit))
@@ -407,8 +404,8 @@ def get_training_plan_context(wellness_days: int = 3) -> dict[str, Any]:
         "recent_hrv": hrv,
         "recent_resting_hr": rhr,
         "notes": [
-            "training readiness and recovery time are unavailable (no Garmin watch)",
-            "power values come from a single-sided meter (left-leg doubled)",
+            "training readiness and recovery time depend on available device data",
+            "when there is no L/R balance data, do not infer meter type or balance",
             "subjective fatigue, soreness, available days and indoor/outdoor "
             "preference must come from the user",
         ],
@@ -446,7 +443,7 @@ The plan must contain, for each day (including rest days):
 Rules:
 - Distinguish recorded facts, calculated values, and coaching interpretation.
 - Do not invent zone boundaries; use FTP-anchored ranges and label them as such.
-- My power meter is single-sided - never reference left/right balance.
+- If there is no L/R balance data, never invent balance or meter type.
 - If data is missing or conflicting, say so instead of guessing.
 - Do not diagnose medical conditions.
 - Do not schedule or upload workouts to my device; present the plan in chat only."""
@@ -465,7 +462,7 @@ def get_activity_weather(activity_id: int) -> dict[str, Any]:
 
 @mcp.tool()
 def get_weather_forecast(days: int = 5) -> dict[str, Any]:
-    """Get the Vancouver weather forecast (Open-Meteo): daily min/max temperature,
+    """Get the configured-location weather forecast (Open-Meteo): daily min/max temperature,
     precipitation probability, wind, and conditions for 1-7 days, plus the next 36 h
     in 3 h steps. Use when planning sessions or fueling: heat means more fluid/sodium
     and earlier starts; heavy rain suggests the easier or indoor alternative.

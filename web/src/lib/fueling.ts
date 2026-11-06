@@ -184,55 +184,29 @@ export function computePlan(inputs: FuelingInputs): FuelingPlan {
   const slots: number[] = []
   for (let t = interval; t < inputs.duration_min - interval / 2; t += interval) slots.push(t)
 
-  const drinkPerSlot = slots.length > 0 ? Math.round(fluidPlanned / (slots.length + 1) / 10) * 10 : 0
+  if (slots.length === 0) slots.push(Math.max(1, Math.floor(inputs.duration_min / 2)))
   const drinkConcentration = drink && drink.fluid_ml > 0 ? drink.carbs_g / drink.fluid_ml : 0
-
-  // Spread solid servings evenly across the ride.
-  const solidAt = new Set<number>()
-  if (solidServings > 0 && slots.length > 0) {
-    for (let i = 0; i < solidServings; i++) {
-      const idx = Math.min(slots.length - 1, Math.round(((i + 0.5) / solidServings) * slots.length))
-      solidAt.add(slots[idx])
-    }
-  }
-
-  if (drink) {
-    rows.push({
-      time_min: -1,
-      label: "Pre-start",
-      items: [`Drink ~${drinkPerSlot} ml of ${drink.name} in the last 15 min`],
-      carbs_g: Math.round(drinkPerSlot * drinkConcentration),
-      fluid_ml: drinkPerSlot,
-      sodium_mg: Math.round((drinkPerSlot / (drink.fluid_ml || 500)) * drink.sodium_mg),
-    })
-  }
-
+  // Cumulative rounding preserves totals even when servings exceed reminder slots.
+  const portion = (total: number, index: number, count: number) =>
+    Math.round(total * (index + 1) / count) - Math.round(total * index / count)
+  const times = drink ? [-1, ...slots] : slots
   let solidCount = 0
-  for (const t of slots) {
+  for (const [index, t] of times.entries()) {
     const items: string[] = []
-    let carbs = 0
-    let fluid = 0
-    let sodium = 0
-    if (drink && drinkPerSlot > 0) {
-      items.push(`Drink ~${drinkPerSlot} ml of ${drink.name}`)
-      carbs += drinkPerSlot * drinkConcentration
-      fluid += drinkPerSlot
-      sodium += (drinkPerSlot / (drink.fluid_ml || 500)) * drink.sodium_mg
+    const fluid = drink ? portion(fluidPlanned, index, times.length) : 0
+    let carbs = drink ? portion(drinkCarbs, index, times.length) : 0
+    let sodium = drink ? portion(drinkSodium, index, times.length) : 0
+    if (drink) items.push(`Drink ~${fluid} ml of ${drink.name}${t < 0 ? " in the last 15 min" : ""}`)
+    if (solid && t >= 0) {
+      const slotIndex = drink ? index - 1 : index
+      const servings = portion(solidServings, slotIndex, slots.length)
+      solidCount += servings
+      if (servings > 0) items.push(`Take ${servings} × ${solid.serving} of ${solid.name}`)
+      carbs += servings * solid.carbs_g
+      sodium += servings * solid.sodium_mg
     }
-    if (solid && solidAt.has(t)) {
-      solidCount += 1
-      items.push(`Take ${solid.serving} of ${solid.name}`)
-      carbs += solid.carbs_g
-      sodium += solid.sodium_mg
-    }
-    rows.push({
-      time_min: t,
-      label: fmtClock(t),
-      items,
-      carbs_g: Math.round(carbs),
-      fluid_ml: Math.round(fluid),
-      sodium_mg: Math.round(sodium),
-    })
+    rows.push({ time_min: t, label: t < 0 ? "Pre-start" : fmtClock(t), items,
+      carbs_g: carbs, fluid_ml: fluid, sodium_mg: sodium })
   }
 
   // --- Prep + cost ---
@@ -328,6 +302,6 @@ export function planSummaryForCoach(inputs: FuelingInputs, plan: FuelingPlan): s
     (solid && plan.solid_servings > 0 ? ` + ${plan.solid_servings}× ${solid.name}` : "") +
     `, total ${plan.totals.carbs_g} g carbs / ${plan.totals.fluid_ml} ml fluid / ${plan.totals.sodium_mg} mg sodium ` +
     `(sweat rate ${inputs.sweat_rate_l_h} L/h, sodium loss ${inputs.sodium_loss_mg_l} mg/L). ` +
-    `Does this fit my training and the Whistler plan, and would you change anything?`
+    `Does this fit my training and my training plan, and would you change anything?`
   )
 }

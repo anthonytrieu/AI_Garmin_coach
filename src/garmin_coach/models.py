@@ -12,11 +12,8 @@ from typing import Any
 
 SOURCE_GARMIN = "garmin"
 
-# Meter history: single-sided Rally RS100 (left-leg doubled) until 2026-07-23;
-# dual-sided Rally from 2026-07-24. Detection is per-ride: balance fields present
-# means dual-sided. The note below is attached only to legacy single-sided rides.
-SINGLE_SIDED_POWER_NOTE = "single-sided power meter (left-leg doubled); no L/R balance data"
-DUAL_SIDED_SINCE = "2026-07-24"
+# Balance availability is detected per ride; missing data does not prove meter type.
+SINGLE_SIDED_POWER_NOTE = "power-meter type unavailable; no L/R balance data"
 
 
 @dataclass(frozen=True)
@@ -41,7 +38,7 @@ class RideSummary:
     max_power_w: float | None
     normalized_power_w: float | None  # as reported by Garmin, not locally calculated
     avg_cadence_rpm: float | None
-    left_balance_pct: float | None  # dual-sided rides only; None = single-sided era
+    left_balance_pct: float | None  # None means balance data unavailable
     right_balance_pct: float | None
     calories_kcal: float | None
     training_load: float | None  # Garmin's activity training load (unitless)

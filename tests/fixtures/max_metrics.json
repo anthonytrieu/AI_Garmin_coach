@@ -3,7 +3,7 @@
   "userId": 12345678,
   "generic": {
    "calendarDate": "2026-07-16",
-   "vo2MaxPreciseValue": 63.7,
+   "vo2MaxPreciseValue": 48.5,
    "vo2MaxValue": 64.0,
    "fitnessAge": 20,
    "fitnessAgeDescription": null,
@@ -11,7 +11,7 @@
   },
   "cycling": {
    "calendarDate": "2026-07-16",
-   "vo2MaxPreciseValue": 63.7,
+   "vo2MaxPreciseValue": 48.5,
    "vo2MaxValue": 64.0,
    "fitnessAge": null,
    "fitnessAgeDescription": null,

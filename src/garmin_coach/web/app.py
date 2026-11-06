@@ -1,10 +1,11 @@
 """FastAPI app: dashboard API + coach chat + static frontend.
 
-Local single-user app — binds to 127.0.0.1 only; never expose publicly.
+Single-owner app. Hosted mode requires configured authentication.
 """
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 import uvicorn
@@ -15,6 +16,7 @@ from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from . import api, chat
+from .security import install_security
 
 WEB_DIST = Path(__file__).resolve().parents[3] / "web" / "dist"
 
@@ -42,6 +44,12 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+    install_security(app)
+
+    @app.get("/healthz")
+    def health() -> dict[str, str]:
+        return {"status": "ok"}
+
     app.include_router(api.router)
     app.include_router(chat.router)
     if WEB_DIST.exists():
@@ -50,7 +58,11 @@ def create_app() -> FastAPI:
 
 
 def main() -> None:
-    uvicorn.run(create_app(), host="127.0.0.1", port=8787)
+    uvicorn.run(
+        create_app(),
+        host="127.0.0.1" if os.getenv("GARMIN_COACH_ENV") == "local" else "0.0.0.0",
+        port=int(os.getenv("PORT", "8787")),
+    )
 
 
 if __name__ == "__main__":
