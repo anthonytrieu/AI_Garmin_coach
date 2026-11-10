@@ -67,9 +67,82 @@ def test_groq_stream_tool_history_and_quota(monkeypatch, tmp_path):
         second = [
             x async for x in chat._events(chat.ChatRequest(message="And today?", session_id="test"))
         ]
-        assert any("free-tier limit" in x for x in second)
+        assert any("rate limit" in x for x in second)
 
     asyncio.run(run())
     saved = store.get_conversation("test")
     assert saved is not None and len(saved["messages"]) == 4
     assert saved["messages"][1]["tools"] == ["Recent activities"]
+
+
+def test_quota_errors_distinguish_size_daily_and_retry():
+    async def check():
+        message, retry = await chat._quota_error(httpx.Response(
+            429, json={"error": {"message": "Request too large for account private-id on TPM"}},
+            headers={"retry-after": "1"},
+        ))
+        assert "waiting will not fix" in message and retry is None
+        assert "private-id" not in message
+        message, retry = await chat._quota_error(httpx.Response(
+            429, json={"error": {"message": "Rate limit reached on tokens per day (TPD)"}},
+            headers={"retry-after": "86400"},
+        ))
+        assert "daily quota" in message and retry is None
+        message, retry = await chat._quota_error(httpx.Response(
+            429, headers={"retry-after": "2.5"}, text="not json",
+        ))
+        assert "3 seconds" in message and retry == 2.5
+        for invalid in ["nan", "inf", "-1", "unknown"]:
+            _, retry = await chat._quota_error(httpx.Response(
+                429, headers={"retry-after": invalid},
+            ))
+            assert retry is None
+    asyncio.run(check())
+
+
+def test_transient_quota_retries_once_without_duplicate_history(monkeypatch, tmp_path):
+    monkeypatch.setenv("GARMIN_COACH_DATA", str(tmp_path))
+    monkeypatch.setenv("GROQ_API_KEY", "test")
+    calls = []
+    sleeps = []
+
+    def respond(request):
+        calls.append(json.loads(request.content))
+        return httpx.Response(429, headers={"retry-after": "2"})
+
+    async def sleep(seconds):
+        sleeps.append(seconds)
+
+    real_client = httpx.AsyncClient
+    monkeypatch.setattr(chat.asyncio, "sleep", sleep)
+    monkeypatch.setattr(chat.httpx, "AsyncClient", lambda **kw: real_client(
+        transport=httpx.MockTransport(respond), **kw,
+    ))
+
+    async def run():
+        return [x async for x in chat._events(chat.ChatRequest(message="Hi", session_id="retry"))]
+
+    events = asyncio.run(run())
+    assert len(calls) == 2 and calls[0] == calls[1]
+    assert sleeps == [2]
+    assert any("2 seconds" in event for event in events)
+    assert len(store.get_conversation("retry")["messages"]) == 2
+
+
+def test_oversized_context_stops_before_provider_call(monkeypatch, tmp_path):
+    monkeypatch.setenv("GARMIN_COACH_DATA", str(tmp_path))
+    monkeypatch.setenv("GROQ_API_KEY", "test")
+    monkeypatch.setattr(chat, "_system_prompt", lambda: "x" * 21000)
+
+    def unexpected_request(request):
+        raise AssertionError("Oversized request reached the provider")
+
+    real_client = httpx.AsyncClient
+    monkeypatch.setattr(chat.httpx, "AsyncClient", lambda **kw: real_client(
+        transport=httpx.MockTransport(unexpected_request), **kw,
+    ))
+
+    async def run():
+        return [x async for x in chat._events(chat.ChatRequest(message="Hi"))]
+
+    assert any("fewer rides" in event for event in asyncio.run(run()))

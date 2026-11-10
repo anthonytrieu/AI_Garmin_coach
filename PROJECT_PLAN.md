@@ -176,3 +176,11 @@ Next action: review the draft PR, rotate the chat-shared Groq key directly in Ra
 - Final hosted checks: after backend restart, old web session returned 401, synthetic conversation remained accessible (200), and Garmin ride read still returned 200. Disposable conversation/session removed.
 - Owner explicitly approved one Garmin-to-Groq test. It completed with HTTP 200, one tool event, 257 text events, and a completion event; persisted conversation read returned 200 and test conversation was deleted. This verifies integration, not broad coaching quality.
 - Current private deployment: `abadea30-72b1-45e4-a231-df508bb1db77`, successful with Dockerfile, `/healthz`, and `/data` volume. IaC plan still reports builder null-to-DOCKERFILE drift although deployed manifest confirms DOCKERFILE; no destructive changes applied.
+
+### Persistent quota error — November 9, 2026
+
+- A synthetic provider probe succeeded (HTTP 200); account response headers showed 8,000 tokens/minute and 998 of 1,000 daily requests remaining. A daily request exhaustion was not present at diagnosis. The exact original rejection was not retained by the old implementation.
+- Measured old request overhead: 7,920 system-context characters plus 9,221 tool-schema characters before history or Garmin results. Repeated tool rounds and large results could exceed the available token budget.
+- Reduced profile/plan excerpts, removed schema titles, limited recent rides to five, bounded each tool result to 6,000 characters and added a 20,000-character aggregate request guard. Character limits are heuristic, not exact token counts. The coach is told excerpts may be incomplete.
+- Parse 429 responses without exposing raw provider/account details: distinguish oversized requests, daily quota, and temporary limits; show Retry-After when available. Retry a temporary response at most once, only when the indicated wait is 30 seconds or less. No billing changes or paid fallback.
+- Validation: 73 backend tests, Ruff and mypy passed, including malformed quota bodies/headers, request-size rejection, and bounded retries without duplicate transcript messages.
