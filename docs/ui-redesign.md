@@ -62,3 +62,11 @@ DEMO_TEST_URL=http://127.0.0.1:5183 \
 - Hosted checks passed backend health, anonymous denial, incorrect-Origin rejection, owner login, Secure/HttpOnly/SameSite cookies, session reload, Train/Progress/Gym schedule mobile routes and logout. Demo direct routes and synthetic workout editing/completion/refresh recovery passed, with zero API requests and no browser runtime errors.
 - Author and committer are `ata99 <ata99@sfu.ca>`. GitHub's contributor API returned only `anthonytrieu`.
 - Physical iPhone Safari validation remains outstanding. The backend was not restarted, and no live Garmin or AI call was needed for this frontend-only deployment.
+
+## Imported progress follow-up — November 10, 2026
+
+Progress now includes recorded working loads with unknown reps, labels them “reps not recorded,” and keeps completion unconfirmed. A single recorded set is sufficient; no volume or rep record is inferred. Known unfinished sets with reps and warm-ups remain excluded, and exercise/equipment/convention compatibility is retained. Existing stored records require no migration or reimport.
+
+History sessions are collapsed into routine/date summaries with recorded-set counts. Explicit routine names can group older unlinked imports. Generic Upper/Arms labels are not guessed as A/B; the expanded session's **Workout routine** selector lets the owner assign a template through the existing revisioned save API. Repeating partial sessions preserves the existing compatible-history carry-forward.
+
+Validation: production build, lint (existing warnings), demo and tracking checks passed. `check-progress-browser.mjs` passed synthetic checks for one/two recorded sets, missing reps, equipment compatibility, collapsed history, grouping, repeat, persisted routine assignment and 320/390/1280px layouts. The existing integration check now expands history before inspecting an exercise.

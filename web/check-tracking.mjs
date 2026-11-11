@@ -39,5 +39,19 @@ try {
   assert.equal(saved.position, 0)
   assert.equal((await t.writeTracking({ kind: 'workout', id: 'example', revision: 1, mutationId: t.uid(), data: { ...w, status: 'completed' } })).position, 1)
   await assert.rejects(() => t.writeTracking({ kind: 'workout', id: 'example', revision: 1, mutationId: t.uid(), data: w }))
+  const partial = t.exercise('Partial history', 4)
+  partial.sets = [
+    { ...t.blankSet(), weight: 30, reps: null },
+    { ...t.blankSet(), weight: 35, reps: 8, done: true },
+    { ...t.blankSet(), weight: 90, reps: 8, done: false },
+    { ...t.blankSet(), weight: 100, warmup: true },
+  ]
+  assert.deepEqual(t.recordedWorkingSets(partial).map(s => s.weight), [30, 35], 'Include weight-only history, exclude known unfinished work and warm-ups')
+  assert.equal(t.loggedSetLabel(partial.sets[0]), '30 lb · reps not recorded')
+  assert.equal(t.loggedSetLabel(partial.sets[1]), '35 lb × 8')
+  assert.equal(t.recordedWorkingSets({ ...partial, sets: [partial.sets[0]] }).length, 1, 'One recorded set is sufficient')
+  assert.equal(t.workoutTitle({ ...w, name: 'Upper A — old workout notes', templateId: null }, initial.records), 'Upper A')
+  assert.equal(t.workoutGroup({ ...w, name: 'Upper A — old workout notes', templateId: null }, initial.records), 'upper-a')
+  assert.equal(t.workoutGroup({ ...w, name: 'Upper', templateId: null }, initial.records), 'custom:Upper', 'Never guess an unspecified A/B variant')
   console.log('Tracking: carry-forward, swaps, portion math, date boundaries, rolling average, rotation, conflicts and demo isolation passed.')
 } finally { rmSync(temp, { recursive: true, force: true }) }

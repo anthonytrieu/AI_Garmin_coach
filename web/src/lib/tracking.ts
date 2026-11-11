@@ -95,3 +95,29 @@ export function parseBikeNote(text: string, date = today()): BikeRide | null {
   if (Number.isNaN(parsed.valueOf()) || localDate(parsed) !== rideDate) return null
   return { minutes, date: rideDate, source: 'manual', externalId: null, note: '' }
 }
+
+/** Recorded loads can be compared without inventing missing reps or confirming completion. */
+export function recordedWorkingSets(e: Exercise): SetEntry[] {
+  return e.sets.filter(s => !s.warmup && s.weight !== null && (s.done || s.reps === null))
+}
+
+export function loggedSetLabel(s: SetEntry): string {
+  if (s.weight === null) return 'Load not recorded'
+  return s.reps === null ? `${s.weight} lb · reps not recorded` : `${s.weight} lb × ${s.reps}`
+}
+
+export function workoutTitle(w: Workout, templates: Row<'template'>[]): string {
+  const name = templates.find(r => r.id === w.templateId)?.data?.name ?? w.name
+  const routine = name.match(/\b(Upper|Arms)\s+([AB])\b|\b(Legs)\b/i)
+  if (routine?.[3]) return 'Legs'
+  if (routine) return `${routine[1]![0]!.toUpperCase()}${routine[1]!.slice(1).toLowerCase()} ${routine[2]!.toUpperCase()}`
+  return name
+}
+
+/** Link only explicit routine names, including older imports without a template association. */
+export function workoutGroup(w: Workout, templates: Row<'template'>[]): string {
+  if (w.templateId) return w.templateId
+  const title = workoutTitle(w, templates)
+  const match = templates.find(r => r.data?.name.toLowerCase() === title.toLowerCase())
+  return match?.id ?? `custom:${title}`
+}

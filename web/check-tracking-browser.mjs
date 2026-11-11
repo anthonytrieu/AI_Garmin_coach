@@ -54,6 +54,7 @@ try {
   assert.equal(state.records.filter(r => r.kind === 'workout' && r.data?.status === 'completed').length, 1)
   await page.goto(personalUrl + '/progress')
   await page.getByLabel('Compare the same workout').selectOption('upper-a')
+  await page.locator('.workout-history-summary').first().click()
   await page.getByRole('button', { name: 'Synthetic custom row', exact: true }).click()
   await page.getByText('15 lb × 10', { exact: true }).waitFor()
   await page.goto(personalUrl + '/log/meal')

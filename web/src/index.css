@@ -248,3 +248,14 @@
 .tracking-page .track-set .set-number { border: 0; background: transparent; min-width: 44px; padding: 0; text-decoration: underline dotted; text-underline-offset: 4px; }
 .set-options-panel { padding: 8px; border-top: 1px solid var(--border); }
 @media (max-width: 359px) { .track-set { grid-template-columns: 44px minmax(0,1fr) minmax(0,1fr) minmax(0,.85fr) 44px; } }
+
+.tracking-page .workout-history-card { margin: 10px 0; padding: 0 14px; }
+.tracking-page .workout-history-summary { display: flex; align-items: center; gap: 10px; padding: 14px 0; list-style: none; }
+.workout-history-summary::-webkit-details-marker { display: none; }
+.workout-history-summary::after { content: '⌄'; margin-left: auto; color: var(--muted-foreground); }
+details[open] > .workout-history-summary::after { transform: rotate(180deg); }
+.workout-history-summary > span { min-width: 0; }
+.workout-history-summary strong { font-size: 15px; overflow-wrap: anywhere; }
+.workout-history-date { display: inline-block; margin-left: 10px; color: var(--muted-foreground); font-size: 13px; }
+.workout-history-summary small { margin-top: 3px; }
+.workout-history-card > details > button:last-child { margin: 12px 0; }
