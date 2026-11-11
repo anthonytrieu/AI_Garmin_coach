@@ -34,3 +34,12 @@ The public demo has the same browser-only confirmation/undo behavior, with no li
 - Existing `check-demo.mjs` and `check-tracking.mjs` passed. Physical iPhone keyboard/background behavior remains a manual check.
 
 The personal browser test explicitly refuses non-loopback origins. It requires an empty synthetic API and personal frontend at 5184, plus demo at 5183; `TRACKING_TEST_URL` and `DEMO_TEST_URL` override those test origins. Nutrition searches and normal AI responses are mocked in browser tests; no test meal/ride is written to production.
+
+## Verified production release — November 10, 2026
+
+- Feature source `767842e`, narrow-phone refinement `7801e07`, and current search integration `87917d0` pushed to `portfolio-release`, using the configured owner Git identity. [Release CI passed](https://github.com/anthonytrieu/AI_Garmin_coach/actions/runs/42961590175).
+- Backend deployment `8724cfc0-65c1-4029-b446-a7b3342149ae` succeeded on the existing Railway service and volume. Before deployment, three SQLite databases and runtime files were backed up under `/data/backups/coach-logging-2026-11-10`; integrity checks passed. No record schema or infrastructure changes.
+- Personal frontend: `dpl_5QwTwYbMZ5PtY2GPQQ4AqP3EGij6`; public demo: `dpl_2fBQN8aiZ2oTQtSZPnXCuZ9ypbvu`. Both production aliases are active.
+- Hosted checks verified owner login, meal and ride previews, unknown-owner denial for food search, narrow layout, and public-demo save/Undo without API requests. No private meal or ride was created during hosted tests.
+- The legacy food-search endpoint returned upstream 503 responses from the hosting network. The integration now uses the documented current `https://search.openfoodfacts.org/search` API, with sanitized plain-text queries and a fixed Canada filter. Live lookup through the personal app returned HTTP 200 and seven valid sourced products for a generic test query.
+- Backend restart revokes existing web sessions; sign in again if prompted. Physical iPhone validation remains outstanding.
