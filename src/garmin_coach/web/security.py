@@ -43,9 +43,17 @@ def install_security(app: FastAPI) -> None:
             return await call_next(request)
         if request.method not in {"GET", "HEAD", "OPTIONS"}:
             if request.headers.get("origin") != origin:
-                return JSONResponse({"detail": "Origin rejected"}, status_code=403)
+                return JSONResponse(
+                    {"detail": "Origin rejected"},
+                    status_code=403,
+                    headers={"Cache-Control": "no-store"},
+                )
         if path != "/api/auth/setup" and not access.valid_session(request.cookies.get(COOKIE)):
-            return JSONResponse({"detail": "Device setup required"}, status_code=401)
+            return JSONResponse(
+                {"detail": "Device setup required"},
+                status_code=401,
+                headers={"Cache-Control": "no-store"},
+            )
         response = await call_next(request)
         response.headers["Cache-Control"] = "no-store"
         response.headers["Referrer-Policy"] = "no-referrer"
