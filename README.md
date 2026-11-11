@@ -27,11 +27,11 @@ Open the URL Vite prints. Demo mode is the default: no backend, Garmin credentia
 - Groq coaching with streamed responses, validated tools, bounded requests, caching, and SQLite conversation history.
 - Separate public-demo and private-data paths, server-enforced owner sessions, and deployment configuration for Vercel/Railway.
 
-## Manual tracking iteration (local, not yet deployed)
+## Manual tracking
 
 The new phone-first screens add workout templates, editable per-set logging, custom exercises and workouts, recoverable drafts, simple calorie/protein meals, reviewed history imports, gym scheduling, pound weigh-ins, bike minutes, and template-first exercise history. Today, Train, Schedule, Progress and Coach form the navigation; cycling tools remain accessible from Train. Basic tracking works without AI.
 
-See [tracking setup and validation](docs/tracking.md) for private template provisioning, storage, draft recovery and backup/restore. Public examples are synthetic. These changes are available in the local source; the hosted links above still serve the earlier release. Real iPhone validation and production deployment remain pending.
+See [tracking setup and validation](docs/tracking.md) for private template provisioning, storage, draft recovery and backup/restore. Public examples are synthetic. These changes are deployed to the private app. The public demo remains on its earlier release. Actual iPhone Safari validation remains pending.
 
 ## Architecture
 

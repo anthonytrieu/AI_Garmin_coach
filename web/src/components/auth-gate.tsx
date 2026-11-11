@@ -25,7 +25,7 @@ export default function AuthGate({children}: {children: ReactNode}) {
       <label className="block text-sm" htmlFor="password">Password</label>
       <Input id="password" type="password" autoComplete="current-password" value={password} onChange={e => setPassword(e.target.value)} required />
       {error && <p role="alert" className="text-sm">{error}</p>}
-      <Button disabled={busy}>{busy ? "Signing in…" : "Sign in"}</Button>
+      <Button type="submit" disabled={busy}>{busy ? "Signing in…" : "Sign in"}</Button>
     </form>
   </main>
 }

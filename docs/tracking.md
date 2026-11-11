@@ -46,7 +46,7 @@ node web/check-tracking.mjs
 
 Garmin daily expenditure is shown as unavailable until the account's daily fields are verified; no final-day projection or deficit is invented. Coach recognizes the bounded local syntax `I biked 40 minutes`, optionally with `today`, `yesterday`, or `on YYYY-MM-DD`, and shows a confirmation card. General Coach access to structured logs remains deferred. No paid provider or integration is enabled.
 
-The new implementation has not been deployed. Before release: validate on actual iPhone Safari/home-screen use; back up production data; provision the private runtime templates/current context; deploy the backend before the private frontend; test auth, persistence after restart, and smoke-test demo isolation. The local private profile/plan update does not update Railway automatically.
+The private release was deployed November 10, 2026; see `PROJECT_PLAN.md` for IDs and hosted checks. For subsequent releases: validate on actual iPhone Safari/home-screen use; back up production data; provision the private runtime templates/current context; deploy the backend before the private frontend; test auth, persistence after restart, and smoke-test demo isolation. The November 10 private templates/profile/plan were provisioned separately; future local edits do not update Railway automatically.
 
 ## History imports and gym planning
 
@@ -57,3 +57,5 @@ Missing dates and uncertain reps remain flagged. Generic Upper/Arms labels do no
 Schedule supports template/date slots, rescheduling, starting and completion links. Planning never advances the rotation; completing the current rotation template follows ordinary workout rules. Existing cycling assignments remain intact. Meal entry now uses total calories/protein for the amount eaten; old stored portion values remain compatible.
 
 `node web/check-import-browser.mjs` uses the same disposable server/template setup as the tracking browser check and requires an empty database apart from templates. It creates only synthetic meals, schedule slots, workouts and weigh-ins; run it separately with fresh disposable storage.
+
+`node web/check-auth-browser.mjs` checks login-button submission, invalid-password recovery and logout against mocked API responses using personal Vite on 5174. It never reads the owner password or production data.

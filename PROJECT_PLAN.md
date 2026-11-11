@@ -209,3 +209,15 @@ See [plan.md](plan.md) for the November 9, 2026 iPhone-first workout, food, and 
 ## Release preparation — November 10, 2026
 
 Owner authorized GitHub push and deployment to the existing hosting. Commit author/committer use the configured owner identity, without AI co-author trailers. Private production data was backed up at `/data/backups/release-2026-11-10-gym` with SQLite integrity checks before provisioning runtime templates/current winter context. Historical import candidates remain local and unsaved. Deployment results will be recorded after verification.
+
+## Private release — November 10, 2026
+
+- Approved source pushed to `portfolio-release` as `04c955b` (and preceding `408c446`); author and committer are the configured owner, with no AI co-author trailers. GitHub CI passed.
+- Railway deployment `9cc2c5bc-633f-4630-adf3-4bd4ec2b7ed5` succeeded on the existing service/volume. Private Vercel deployment `dpl_F5tUxK8dZ1cc6wPmgaC4t97xMarV` is aliased to https://garmin-coach-personal.vercel.app. No infrastructure/billing changes.
+- Before deployment, private SQLite/files were backed up under `/data/backups/release-2026-11-10-gym`; integrity checks passed. Private templates and winter context were provisioned separately from sanitized source bundles. Existing cycling schedule JSON was retained; old active plan markdown archived.
+- Hosted checks passed anonymous denial, Origin protection, owner login and secure cookies, template loading, idempotent writes, CSV preview, restart persistence/session revocation and logout. Disposable synthetic note removed. Personal history import candidates remain local and unsaved; no AI extraction was invoked.
+- Actual iPhone Safari review remains the next owner check. The public demo was not redeployed in this private release.
+
+- Hosted browser QA found the shared button defaults to a non-submit button. The owner login now explicitly uses `type="submit"`; synthetic browser checks cover click submission, bad-password recovery and logout. Frontend rebuilt and redeployed with this fix.
+
+- Final private frontend deployment: `dpl_CrXswJFEmdUA7jQ8SL9jpUVq2xZ1`. Hosted Chromium checks passed login/reload/logout, Train/Schedule/meal/import/Progress at 390px, simplified meal controls and import page. Existing public demo emitted no API requests. Actual iPhone remains to be tested by the owner. Repository history has only the configured owner author and no co-author trailers.
