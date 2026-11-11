@@ -1,6 +1,7 @@
-import RideConfirmation from "@/components/ride-confirmation"
-import { parseBikeNote } from "@/lib/tracking"
-import type { BikeRide } from "@/lib/tracking"
+import CoachLogReview from "@/components/coach-log-review"
+import type { LogReview } from "@/lib/coach-logging"
+import { createLogReview, loadLogReview, persistLogReview } from "@/lib/coach-logging"
+import { useTracking } from "@/components/tracking-provider"
 import { useEffect, useRef, useState } from "react"
 import ReactMarkdown from "react-markdown"
 import { Link, useLocation } from "react-router-dom"
@@ -32,6 +33,7 @@ interface SseEvent {
 
 const SUGGESTIONS = [
   "I biked 40 minutes",
+  "I ate a Jr Chicken from McDonalds. Add that to today’s meals.",
   "How should I balance lifting and recovery this week?",
   "How can I progress my lifts without rushing the weight?",
   "How is this week tracking against my training plan?",
@@ -56,7 +58,13 @@ async function* readSse(resp: Response): AsyncGenerator<SseEvent> {
 }
 
 export default function Coach() {
-  const [ride, setRide] = useState<BikeRide | null>(null)
+  const tracking = useTracking()
+  const [review, setReview] = useState<LogReview | null>(loadLogReview)
+  const [loggingError, setLoggingError] = useState('')
+  function updateReview(value: LogReview | null) {
+    try { persistLogReview(value); setReview(value); setLoggingError(''); return true }
+    catch { setLoggingError('Device storage is unavailable. Enable storage before logging through Coach, or use the meal/ride forms.'); return false }
+  }
   const location = useLocation()
   const prefill = (location.state as { prefill?: string } | null)?.prefill
   const [messages, setMessages] = useState<ChatMessage[]>([])
@@ -114,9 +122,9 @@ export default function Coach() {
 
   async function send(text: string) {
     const question = text.trim()
-    if (!question || busy) return
-    const parsedRide = parseBikeNote(question)
-    if (parsedRide) { setRide(parsedRide); setInput(""); return }
+    if (!question || busy || review) return
+    const next = createLogReview(question, tracking.rows('meal'))
+    if (next) { if (updateReview(next)) setInput(''); return }
     setBusy(true)
     setInput("")
     setMessages((m) => [
@@ -199,7 +207,7 @@ export default function Coach() {
               ))}
             </SelectContent>
           </Select>
-          <Button variant="outline" size="sm" onClick={newChat} disabled={busy}>
+          <Button variant="outline" size="sm" onClick={newChat} disabled={busy || !!review}>
             New chat
           </Button>
           <Button
@@ -254,7 +262,8 @@ export default function Coach() {
         )}
       </div>
 
-      {ride && <RideConfirmation key={JSON.stringify(ride)} initial={ride} onClose={() => setRide(null)} />}
+      {loggingError && <p role="alert">{loggingError}</p>}
+      {review && <CoachLogReview key={review.id} review={review} onChange={updateReview} onClose={() => updateReview(null)} />}
       <form
         className="flex gap-2 border-t pt-4 pb-4"
         onSubmit={(e) => {
@@ -265,10 +274,11 @@ export default function Coach() {
         <Input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Ask your coach, or say ‘I biked 40 minutes’…"
-          disabled={busy}
+          aria-label="Message your coach"
+          placeholder="Ask your coach, or log a meal or ride…"
+          disabled={busy || !!review}
         />
-        <Button type="submit" disabled={busy || !input.trim()}>
+        <Button type="submit" disabled={busy || !!review || !input.trim()}>
           {busy ? "Thinking…" : "Send"}
         </Button>
       </form>
