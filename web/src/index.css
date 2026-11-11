@@ -197,3 +197,54 @@
 .tracking-page progress::-webkit-progress-bar { background: var(--secondary); }
 .tracking-page progress::-webkit-progress-value { background: var(--primary); }
 .tracking-page progress::-moz-progress-bar { background: var(--primary); }
+
+/* Shared training surfaces. Garmin chart semantics remain independent. */
+:root { --primary: #1765d1; --primary-foreground: #fff; --background: #f6f7f9; --accent: #eaf2ff; --accent-foreground: #1559b6; --ring: #1765d1; --set-success: #eaf7ef; --set-check: #187340; }
+.dark { --primary: #83b5ff; --primary-foreground: #10233f; --background: #111317; --card: #191c22; --accent: #202e43; --accent-foreground: #a9ccff; --ring: #83b5ff; --set-success: #182f25; --set-check: #83d9a5; }
+.tracking-page { padding: 24px 16px 32px; }
+.tracking-page h1 { font-size: 28px; line-height: 1.2; font-weight: 700; }
+.tracking-page h2 { font-size: 18px; letter-spacing: -.3px; overflow-wrap: anywhere; }
+.track-card { border-radius: 12px; padding: 16px; margin: 16px 0; box-shadow: 0 1px 2px #00000004; }
+.tracking-page :is(button, a, input, select, textarea, summary):focus-visible, nav a:focus-visible { outline: 3px solid var(--ring); outline-offset: 3px; }
+.tracking-page .primary { font-weight: 650; border-color: transparent; }
+.track-row > h2 { flex: 1; margin: 0; }
+.track-set { grid-template-columns: 24px minmax(0,1.1fr) minmax(0,1fr) minmax(0,.85fr) 44px; gap: 6px; margin: 0; min-height: 52px; text-align: center; font-variant-numeric: tabular-nums; }
+.track-set.headings { min-height: 32px; text-transform: uppercase; font-size: 10px; font-weight: 600; letter-spacing: .5px; }
+.tracking-page .track-set input { padding: 8px 2px; min-height: 44px; border-radius: 7px; background: var(--muted); border-color: transparent; font-weight: 600; appearance: textfield; }
+.track-set input::-webkit-inner-spin-button, .track-set input::-webkit-outer-spin-button { appearance: none; margin: 0; }
+.set-block { border-top: 1px solid var(--border); padding: 4px; margin-inline: -4px; border-radius: 6px; }
+.set-block.is-complete { background: var(--set-success); border-color: transparent; }
+.set-previous { color: var(--muted-foreground); font-size: 12px; overflow-wrap: anywhere; }
+.set-number { font-size: 13px; font-weight: 650; }
+.is-warmup .set-number { color: var(--primary); }
+.tracking-page .track-set button[aria-pressed=true] { background: var(--set-check); color: var(--card); border-color: transparent; }
+.tracking-page .set-options { margin: 0; }
+.tracking-page .set-options summary { font-size: 11px; color: var(--muted-foreground); padding: 12px 4px; }
+.workout-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; position: sticky; top: 0; z-index: 10; background: var(--background); padding: 8px 0; }
+.workout-summary { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; align-items: center; font-size: 12px; color: var(--muted-foreground); }
+.workout-summary details { margin: 0; }
+.track-sync { align-items: baseline; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
+.track-sync > span { flex: 1; min-width: 140px; }
+.track-sync details { margin: 0; }
+.track-sync summary { font-size: 12px; }
+.exercise-dialog { position: fixed; inset: auto 0 0; width: min(100%, 560px); max-height: 85dvh; margin: auto auto 0; border: 1px solid var(--border); border-radius: 20px 20px 0 0; padding: 20px 16px max(20px, env(safe-area-inset-bottom)); background: var(--card); color: var(--foreground); overflow-y: auto; overscroll-behavior: contain; }
+.exercise-dialog::backdrop { background: #0008; }
+.picker-heading { display: flex; align-items: center; gap: 10px; }
+.picker-heading h2 { margin: 0; }
+.workout-resume { display: flex; gap: 12px; align-items: center; margin: 16px 16px 0; padding: 12px 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--accent); font-size: 13px; }
+.workout-resume span { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.workout-resume small { display: block; color: var(--muted-foreground); }
+.routine-feature { border-left: 3px solid var(--primary); }
+.track-filters { display: flex; gap: 6px; margin: 20px 0; }
+.tracking-page .track-filters button { flex: 1; min-width: 0; padding-inline: 6px; font-size: 13px; }
+.track-list { align-items: start; gap: 10px; }
+.track-list span:first-child { min-width: 0; overflow-wrap: anywhere; }
+.track-list span:last-child { flex-shrink: 1; text-align: right; }
+.track-history p { color: var(--muted-foreground); font-size: 13px; line-height: 1.7; }
+@media (max-width: 359px) { .tracking-page { padding-inline: 12px; } .track-card { padding: 12px; } .track-set { gap: 4px; grid-template-columns: 20px minmax(0,1fr) minmax(0,.9fr) minmax(0,.8fr) 44px; } .set-previous { font-size: 11px; } }
+@media (min-width: 640px) { .exercise-dialog { inset: 0; margin: auto; border-radius: 16px; max-height: 80dvh; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; } }
+.track-set { grid-template-columns: 44px minmax(0,1.1fr) minmax(0,1fr) minmax(0,.85fr) 44px; }
+.tracking-page .track-set .set-number { border: 0; background: transparent; min-width: 44px; padding: 0; text-decoration: underline dotted; text-underline-offset: 4px; }
+.set-options-panel { padding: 8px; border-top: 1px solid var(--border); }
+@media (max-width: 359px) { .track-set { grid-template-columns: 44px minmax(0,1fr) minmax(0,1fr) minmax(0,.85fr) 44px; } }
