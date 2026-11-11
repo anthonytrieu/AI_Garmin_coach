@@ -69,7 +69,6 @@ def test_upstream_error_is_actionable_and_does_not_leak(client, monkeypatch):
 def test_nutrition_search_requires_owner_auth(monkeypatch, tmp_path):
     monkeypatch.setenv("GARMIN_COACH_ENV", "production")
     monkeypatch.setenv("GARMIN_COACH_DATA", str(tmp_path))
-    monkeypatch.setenv("COACH_PASSWORD", "synthetic-password-with-more-than-24-chars")
     monkeypatch.setenv("COACH_ORIGIN", "https://owner.example")
     client = TestClient(create_app())
     assert client.get("/api/nutrition/search?q=Synthetic").status_code == 401

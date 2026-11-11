@@ -1,3 +1,4 @@
+import DeviceAccess from './device-access'
 import { House, Dumbbell, CalendarDays, ChartNoAxesCombined, MessageCircle, Sun, Moon } from 'lucide-react'
 import { useTracking } from '@/components/tracking-provider'
 import { DEMO } from "@/lib/mode"
@@ -72,7 +73,7 @@ export default function Layout() {
           <strong>Portfolio demo · synthetic data · June 17, 2026</strong>
           <a className="underline" href="https://github.com/anthonytrieu/AI_Garmin_coach">Source & setup</a>
           <button className="underline" onClick={() => { Object.keys(localStorage).filter(k => k.startsWith("demo-")).forEach(k => localStorage.removeItem(k)); window.location.reload() }}>Reset demo</button>
-        </div> : <div className="border-b px-4 py-2 text-right text-xs"><button onClick={async () => { await fetch("/api/auth/logout", {method: "POST"}); window.location.reload() }}>Sign out</button></div>}
+        </div> : <div className="flex items-center justify-end border-b px-4 py-1 text-xs"><DeviceAccess /><button className="min-h-11 px-3" onClick={async () => { await fetch("/api/auth/logout", {method: "POST"}); window.location.reload() }}>Sign out</button></div>}
         <main className="min-w-0 flex-1 pb-[calc(88px+env(safe-area-inset-bottom))] sm:pb-0">
           {draft?.data.status === "draft" && pathname !== "/workout" && <NavLink className="workout-resume" to="/workout"><Dumbbell size={18} /><span>{draft.data.name}<small>Workout in progress</small></span><strong>Resume →</strong></NavLink>}
           <Outlet />

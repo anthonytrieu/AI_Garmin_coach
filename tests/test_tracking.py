@@ -6,7 +6,7 @@ from uuid import uuid4
 import pytest
 from fastapi.testclient import TestClient
 
-from garmin_coach.web import store, tracking
+from garmin_coach.web import access, store, tracking
 from garmin_coach.web.app import create_app
 
 
@@ -177,15 +177,14 @@ def test_private_seed_can_be_added_after_database_creation(client, monkeypatch, 
 def test_tracking_auth_and_origin(monkeypatch, tmp_path):
     monkeypatch.delenv("GARMIN_COACH_ENV", raising=False)
     monkeypatch.setenv("GARMIN_COACH_DATA", str(tmp_path))
-    monkeypatch.setenv("COACH_PASSWORD", "synthetic-test-password-only-long")
     monkeypatch.setenv("COACH_ORIGIN", "https://owner.example")
     with TestClient(create_app(), base_url="https://owner.example") as c:
         assert c.get("/api/tracking").status_code == 401
         assert c.get("/api/tracking/export").status_code == 401
         c.post(
-            "/api/auth/login",
+            "/api/auth/setup",
             headers={"Origin": "https://owner.example"},
-            json={"password": "synthetic-test-password-only-long"},
+            json={"token": access.issue_setup_link()},
         )
         assert c.get("/api/tracking").status_code == 200
         assert put(c, "ride", "x", {"date": "2026-06-17", "minutes": 40}).status_code == 403

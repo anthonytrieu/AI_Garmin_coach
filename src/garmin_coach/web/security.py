@@ -1,10 +1,7 @@
-"""Single-owner opaque sessions. No passwords or session tokens are logged.
-
-One process/replica only: restart revokes sessions. Production requires TLS.
-"""
+"""Single-owner passwordless device sessions. Setup links are issued only by an operator."""
 
 import os
-import secrets
+import re
 import time
 from collections import deque
 from typing import Any
@@ -13,19 +10,28 @@ from urllib.parse import urlsplit
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
+from . import access
+
 COOKIE = "coach_session"
-TTL = 12 * 60 * 60
+TTL = access.SESSION_TTL
 
 
 def install_security(app: FastAPI) -> None:
     local = os.getenv("GARMIN_COACH_ENV") == "local"
     if os.getenv("RAILWAY_ENVIRONMENT") and local:
         raise RuntimeError("Local authentication bypass is forbidden on Railway")
-    password = os.getenv("COACH_PASSWORD", "")
-    origin = os.getenv("COACH_ORIGIN", "")
-    if not local and (len(password) < 24 or urlsplit(origin).scheme != "https"):
-        raise RuntimeError("Set COACH_PASSWORD (24+ characters) and an HTTPS COACH_ORIGIN")
-    sessions: dict[str, float] = {}
+    origin = os.getenv("COACH_ORIGIN", "").rstrip("/")
+    parsed = urlsplit(origin)
+    if not local and (
+        parsed.scheme != "https"
+        or not parsed.netloc
+        or parsed.path not in {"", "/"}
+        or parsed.query
+        or parsed.fragment
+        or parsed.username
+        or parsed.password
+    ):
+        raise RuntimeError("Set COACH_ORIGIN to an HTTPS origin")
     attempts: deque[float] = deque(maxlen=5)
 
     @app.middleware("http")
@@ -35,48 +41,43 @@ def install_security(app: FastAPI) -> None:
             return await call_next(request)
         if local:
             return await call_next(request)
-        now = time.monotonic()
-        for token, expiry in list(sessions.items()):
-            if expiry <= now:
-                sessions.pop(token, None)
         if request.method not in {"GET", "HEAD", "OPTIONS"}:
             if request.headers.get("origin") != origin:
                 return JSONResponse({"detail": "Origin rejected"}, status_code=403)
-        if path != "/api/auth/login" and request.cookies.get(COOKIE) not in sessions:
-            return JSONResponse({"detail": "Sign in required"}, status_code=401)
+        if path != "/api/auth/setup" and not access.valid_session(request.cookies.get(COOKIE)):
+            return JSONResponse({"detail": "Device setup required"}, status_code=401)
         response = await call_next(request)
         response.headers["Cache-Control"] = "no-store"
+        response.headers["Referrer-Policy"] = "no-referrer"
         return response
 
-    @app.post("/api/auth/login")
-    async def login(request: Request) -> JSONResponse:
+    @app.post("/api/auth/setup")
+    async def setup(request: Request) -> JSONResponse:
         now = time.monotonic()
         while attempts and attempts[0] < now - 60:
             attempts.popleft()
         if len(attempts) >= 5:
             return JSONResponse({"detail": "Try again in a minute"}, 429)
         attempts.append(now)
-        body = await request.body()
-        if len(body) > 4096:
-            return JSONResponse({"detail": "Invalid login"}, 400)
+        if len(await request.body()) > 4096:
+            return JSONResponse({"detail": "Invalid setup link"}, 400)
         try:
-            submitted = (await request.json()).get("password", "")
+            token = (await request.json()).get("token", "")
         except (ValueError, AttributeError):
-            return JSONResponse({"detail": "Invalid login"}, 400)
-        if (
-            not isinstance(submitted, str)
-            or not secrets.compare_digest(submitted.encode(), password.encode())
-            or (not password and not local)
-        ):
-            return JSONResponse({"detail": "Invalid login"}, 401)
-        token = secrets.token_urlsafe(32)
-        if len(sessions) >= 10:
-            sessions.pop(next(iter(sessions)))
-        sessions[token] = now + TTL
+            return JSONResponse({"detail": "Invalid setup link"}, 400)
+        if not isinstance(token, str) or not re.fullmatch(r"[A-Za-z0-9_-]{43}", token):
+            return JSONResponse(
+                {"detail": "This setup link is invalid, expired, or already used"}, 401
+            )
+        session = access.exchange_link(token, request.cookies.get(COOKIE))
+        if session is None:
+            return JSONResponse(
+                {"detail": "This setup link is invalid, expired, or already used"}, 401
+            )
         response = JSONResponse({"authenticated": True})
         response.set_cookie(
             COOKIE,
-            token,
+            session,
             max_age=TTL,
             httponly=True,
             secure=not local,
@@ -85,13 +86,23 @@ def install_security(app: FastAPI) -> None:
         )
         return response
 
+    @app.post("/api/auth/setup-link")
+    async def setup_link() -> JSONResponse:
+        try:
+            token = access.issue_setup_link("Additional device", ttl=15 * 60)
+        except ValueError:
+            return JSONResponse({"detail": "Too many unused links. Please try again later."}, 429)
+        return JSONResponse({"url": origin + "/#setup=" + token, "expiresIn": 15 * 60})
+
     @app.get("/api/auth/session")
     async def session() -> dict[str, bool]:
         return {"authenticated": True}
 
     @app.post("/api/auth/logout")
     async def logout(request: Request) -> JSONResponse:
-        sessions.pop(request.cookies.get(COOKIE, ""), None)
+        access.revoke_session(request.cookies.get(COOKIE))
         response = JSONResponse({"authenticated": False})
-        response.delete_cookie(COOKIE, path="/api")
+        response.delete_cookie(
+            COOKIE, path="/api", secure=not local, httponly=True, samesite="strict"
+        )
         return response

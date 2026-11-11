@@ -12,7 +12,6 @@ Use the repository root and included Dockerfile. Infrastructure is defined in `.
 | --- | --- |
 | `GARMIN_COACH_ENV` | `production` |
 | `COACH_ORIGIN` | Exact personal Vercel origin, e.g. `https://your-personal-project.vercel.app` (no trailing slash) |
-| `COACH_PASSWORD` | Random secret of at least 24 characters, saved in a password manager |
 | `GROQ_API_KEY` | Your Groq key, server only |
 | `GROQ_MODEL` | `openai/gpt-oss-120b`, subject to account availability |
 | `GARMIN_COACH_DATA` | `/data/coach` |
@@ -24,7 +23,7 @@ Use the repository root and included Dockerfile. Infrastructure is defined in `.
 
 Railway supplies `PORT`. Health check: `/healthz`. Local auth bypass is refused when Railway's environment marker exists. Never use `GARMIN_COACH_ENV=local` in hosted configurations. Keep private variables out of PR previews.
 
-For Garmin provisioning, use an authenticated operator shell in the actual deployed container with its volume mounted, then run `garmin-setup` interactively and complete MFA. `railway run` locally is not a remote container shell and does not provision the hosted volume. Do not paste tokens into chat, commits or build logs. Place the owner's private profile and plans on the volume through a secure operator transfer; use `sessions.json` for structured sessions. On expiry, repeat interactive setup. There is no public setup endpoint.
+For Garmin provisioning, use an authenticated operator shell in the actual deployed container with its volume mounted, then run `garmin-setup` interactively and complete MFA. `railway run` locally is not a remote container shell and does not provision the hosted volume. Do not paste tokens into chat, commits or build logs. Place the owner's private profile and plans on the volume through a secure operator transfer; use `sessions.json` for structured sessions. On expiry, repeat interactive setup. There is no public Garmin-provisioning endpoint.
 
 ## Private Vercel frontend
 
@@ -39,10 +38,10 @@ This writes ignored `web/vercel.personal.json`. Deploy this project with Vercel 
 ## Required hosted smoke checks
 
 1. `/healthz` returns only health status; direct Railway `/api/rides` and conversations return 401 anonymously.
-2. Owner login sets Secure/HttpOnly cookies. Reload retains the session; logout and expiry deny access again.
+2. A one-time setup link sets Secure/HttpOnly cookies. Reload and backend restart retain the session; logout and expiry deny access again.
 3. A request with an incorrect Origin cannot log in, delete conversations, or send chat.
 4. Test a full streamed coach reply through Vercel, including multiple tool rounds and provider timeout/quota errors.
-5. Confirm Garmin reads work without exposing tokens, and chats survive backend restart. Restart should revoke the web session.
+5. Confirm Garmin reads work without exposing tokens, and chats survive backend restart. Restart should retain a trusted-device session.
 6. Confirm demo traffic never calls `/api` or external providers.
 
 Hosted owner login/logout, cookie flags, origin rejection, and a short live Groq streamed reply passed on November 5, 2026. After interactive reauthentication, a live Garmin ride read returned HTTP 200 through the private frontend. A live Garmin tool-assisted Groq response also completed. A backend restart preserved the synthetic chat and Garmin access and revoked the previous web session. Long-running proxy timeouts, volume restore, and broader model quality remain unverified. The application imposes a 100-second overall reply timeout; platform proxy limits may be lower. Shorten the request budget if deployment tests require it.
@@ -64,7 +63,7 @@ Test restore in an isolated private environment: restore the volume data, start 
 - Public synthetic demo: https://garmin-coach-demo.vercel.app
 - Private owner app: https://garmin-coach-personal.vercel.app
 - Backend health: https://coach-api-production-a667.up.railway.app/healthz
-- Owner password is in ignored `.local/owner-password.txt`; move it to your password manager.
+- Password login has been removed; `COACH_PASSWORD` is unused. Issue device links through an authenticated operator shell: `python -m garmin_coach.web.access create-link --label "Owner phone"`. Treat its output as a private credential and open it only on your own device. See [device access](device-access.md).
 - Garmin tokens, athlete profile and training plans were transferred to the private volume with explicit owner approval. Files use owner-only permissions. Refresh rejected Garmin sessions using `garmin-setup`, then securely replace the volume tokens.
 - The selected model is `openai/gpt-oss-120b`, confirmed available via this account's Models API. The initial Llama model was unavailable. Model availability and quotas can change; consult [Groq models](https://console.groq.com/docs/models). No billing or paid fallback was enabled.
 - Rotate the Groq key shared in chat and replace `GROQ_API_KEY` directly in Railway.

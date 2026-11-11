@@ -153,7 +153,6 @@ def test_schedule_does_not_advance_and_history_survives_removal(client):
 
 def test_import_auth(client, monkeypatch):
     monkeypatch.delenv("GARMIN_COACH_ENV")
-    monkeypatch.setenv("COACH_PASSWORD", "synthetic-long-test-password-only")
     monkeypatch.setenv("COACH_ORIGIN", "https://owner.example")
     secured = TestClient(create_app(), base_url="https://owner.example")
     assert (

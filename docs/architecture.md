@@ -10,13 +10,18 @@
 
 ## Owner authentication
 
-The single-owner server uses FastAPI/Starlette middleware, constant-time password comparison, and cryptographically random opaque sessions kept in bounded server memory. This intentionally avoids a new identity-service dependency for a one-person app; it is not a multi-user identity platform. Production requires a 24+ character secret, HTTPS origin, Secure/HttpOnly/SameSite cookies, and exact Origin checks on mutations. Login is limited to five attempts per minute globally (including successful attempts), trading distributed brute-force resistance for possible temporary denial of login. Sessions expire after 12 hours; logout revokes the server token; restart revokes all sessions. Deploy one process/replica. A future multi-user version should replace this with a maintained identity provider and per-user authorization.
+The single-owner server uses FastAPI/Starlette middleware and random opaque device sessions. Setup uses single-use, expiring private links, issued by an operator or another trusted device. Links carry the credential in a URL fragment, which the frontend removes immediately; redemption requires an explicit button and a same-origin POST. Only SHA-256 token hashes are stored in a separate owner-only `auth.db` on the persistent volume. Link consumption and session creation are atomic.
+
+Remembered devices expire after 90 days and survive deployment/restart. Secure/HttpOnly/SameSite=Strict cookies remain host-only under `/api`; logout revokes the database session. Ten devices and twenty outstanding links are allowed; redemption is limited to five attempts/minute per process. Additional-device links expire in 15 minutes; operator links default to 24 hours. Password login is removed. The operator can revoke every device/link with `python -m garmin_coach.web.access revoke-all`.
+
+This is a temporary single-owner access mechanism, not a multi-user identity platform. Future Google/account sign-in should use a maintained identity provider and per-user data authorization. See [device access](device-access.md).
+
 
 ## AI boundary
 
 Groq's streaming chat-completions endpoint replaces the machine-local Claude Agent SDK. The model can request only explicitly allowlisted Garmin functions; Pydantic validates arguments and rejects unknown fields. There are at most five provider rounds and four calls per round, bounded history/output, a two-minute in-memory tool cache, provider timeouts, and no automatic paid fallback. Existing SQLite transcript tables remain readable; old SDK session IDs are retained but no longer used.
 
-Synchronous Garmin calls run in threads. A coroutine timeout ends waiting but cannot forcibly kill an already-running library request; this remains an operational limitation. The app serializes chat and protects conversation deletion during an active response. Dashboard requests can still run concurrently. Cache and sessions are process-local and reset on deploy.
+Synchronous Garmin calls run in threads. A coroutine timeout ends waiting but cannot forcibly kill an already-running library request; this remains an operational limitation. The app serializes chat and protects conversation deletion during an active response. Dashboard requests can still run concurrently. Garmin/tool caches are process-local; trusted-device sessions persist on the volume.
 
 ## Persistence
 
