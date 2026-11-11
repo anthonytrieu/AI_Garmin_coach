@@ -34,7 +34,12 @@ def product_match(product: dict[str, Any]) -> dict[str, Any] | None:
     if calories is None:
         return None
     protein = _number(nutrients.get("proteins_100g"), 100)
-    brand = str(product.get("brands", "")).strip()
+    brands = product.get("brands", "")
+    brand = (
+        ", ".join(str(b) for b in brands[:3])
+        if isinstance(brands, list)
+        else str(brands).strip()
+    )
     return {
         "id": f"off-{code}",
         "name": (f"{name} · {brand}" if brand else name)[:120],
@@ -52,6 +57,9 @@ async def search(q: str = Query(min_length=2, max_length=120)) -> dict[str, Any]
     query = " ".join(q.split())
     if len(query) < 2:
         raise HTTPException(422, "Enter at least two characters")
+    words = " ".join(re.findall(r"[^\W_]+", query)).casefold()
+    if not words:
+        raise HTTPException(422, "Enter a food name")
     key = query.casefold()
     cached = _cache.get(key)
     now = time.monotonic()
@@ -64,16 +72,11 @@ async def search(q: str = Query(min_length=2, max_length=120)) -> dict[str, Any]
     try:
         async with httpx.AsyncClient(timeout=8, follow_redirects=False) as client:
             response = await client.get(
-                "https://world.openfoodfacts.org/cgi/search.pl",
+                "https://search.openfoodfacts.org/search",
                 params={
-                    "search_terms": query,
-                    "search_simple": 1,
-                    "action": "process",
-                    "json": 1,
+                    # Strip query syntax and lowercase operators before adding our filter.
+                    "q": words + ' countries_tags:"en:canada"',
                     "page_size": 8,
-                    "tagtype_0": "countries",
-                    "tag_contains_0": "contains",
-                    "tag_0": "canada",
                     "fields": "code,product_name,brands,nutriments",
                 },
                 headers={
@@ -81,7 +84,10 @@ async def search(q: str = Query(min_length=2, max_length=120)) -> dict[str, Any]
                 },
             )
             response.raise_for_status()
-            products = response.json().get("products", [])
+            payload = response.json()
+            if payload.get("errors") or payload.get("timed_out"):
+                raise ValueError("Food search incomplete")
+            products = payload.get("hits", [])
             if not isinstance(products, list):
                 raise ValueError("Invalid food search")
             items = [

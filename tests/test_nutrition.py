@@ -34,7 +34,7 @@ def test_search_is_bounded_cached_and_read_only(client, monkeypatch):
 
     async def get(self, url, **kwargs):
         calls.append((url, kwargs))
-        return httpx.Response(200, request=httpx.Request("GET", url), json={"products": [
+        return httpx.Response(200, request=httpx.Request("GET", url), json={"hits": [
             {"code": "12345678", "product_name": "Synthetic cereal", "brands": "Example",
              "nutriments": {"energy-kcal_100g": 350, "proteins_100g": 10}},
             {"code": "invalid", "product_name": "Skip"},
@@ -46,8 +46,8 @@ def test_search_is_bounded_cached_and_read_only(client, monkeypatch):
     assert len(result.json()["items"]) == 1
     assert client.get("/api/nutrition/search?q=Synthetic%20cereal").json() == result.json()
     assert len(calls) == 1
-    assert calls[0][0] == "https://world.openfoodfacts.org/cgi/search.pl"
-    assert calls[0][1]["params"]["tag_0"] == "canada"
+    assert calls[0][0] == "https://search.openfoodfacts.org/search"
+    assert calls[0][1]["params"]["q"] == 'synthetic cereal countries_tags:"en:canada"'
     assert "GarminCoach" in calls[0][1]["headers"]["User-Agent"]
     assert client.get("/api/nutrition/search?q=Another").status_code == 429
     assert client.get("/api/tracking").json()["records"] == []
@@ -63,6 +63,7 @@ def test_upstream_error_is_actionable_and_does_not_leak(client, monkeypatch):
     assert "package label" in response.json()["detail"]
     assert "private upstream" not in response.text
     assert client.get("/api/nutrition/search?q=x").status_code == 422
+    assert client.get("/api/nutrition/search?q=!!!").status_code == 422
 
 
 def test_nutrition_search_requires_owner_auth(monkeypatch, tmp_path):
