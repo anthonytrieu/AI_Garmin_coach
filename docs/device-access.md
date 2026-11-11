@@ -41,3 +41,12 @@ python -m ruff check src tests
 python -m mypy
 TRACKING_TEST_URL=http://127.0.0.1:5184 node web/check-auth-browser.mjs
 ```
+
+## Production verification — November 11, 2026
+
+- Source commits `46248a7` and `4dfa7f8` pushed with the configured owner author/committer. [Release CI passed](https://github.com/anthonytrieu/AI_Garmin_coach/actions/runs/43056333029).
+- 97 backend tests, Ruff, mypy, demo/personal builds, frontend lint (existing warnings), deterministic demo/tracking/logging checks, and the synthetic passwordless browser check passed.
+- Existing databases/runtime files were backed up under `/data/backups/passwordless-devices-2026-11-11`; SQLite integrity checks passed. Existing tracking and chat records were not migrated or changed.
+- Backend `68b17f57-e259-44a6-8514-ef94b8804627` and personal frontend `dpl_GEkQffZvoawhSAHS364HCubnncXt` deployed successfully. The public demo remains independent and requires no setup link.
+- Hosted checks used a separate disposable link/device: secure 90-day cookie, refresh retention, second-device issuance/redemption and independent logout passed. A real backend restart preserved the same authenticated device; final logout revoked it. Test sessions were revoked, no private tracking/chat records were written, and the owner's separate setup link was left unused.
+- The owner's initial one-use link is retained only in an ignored owner-only local file and delivered privately. No credential-bearing URL was committed or included in deployment bundles. Physical iPhone/home-screen behavior remains a manual check.
