@@ -28,3 +28,4 @@ jobs:
       - run: npm run build
       - run: npm run lint
       - run: node check-demo.mjs
+      - run: node check-tracking.mjs

@@ -1,6 +1,9 @@
+import RideConfirmation from "@/components/ride-confirmation"
+import { parseBikeNote } from "@/lib/tracking"
+import type { BikeRide } from "@/lib/tracking"
 import { useEffect, useRef, useState } from "react"
 import ReactMarkdown from "react-markdown"
-import { useLocation } from "react-router-dom"
+import { Link, useLocation } from "react-router-dom"
 import { api, type ConversationSummary } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -28,8 +31,9 @@ interface SseEvent {
 }
 
 const SUGGESTIONS = [
-  "How was my last ride?",
-  "Am I recovered enough for intervals tomorrow?",
+  "I biked 40 minutes",
+  "How should I balance lifting and recovery this week?",
+  "How can I progress my lifts without rushing the weight?",
   "How is this week tracking against my training plan?",
   "What should I focus on this weekend?",
 ]
@@ -52,6 +56,7 @@ async function* readSse(resp: Response): AsyncGenerator<SseEvent> {
 }
 
 export default function Coach() {
+  const [ride, setRide] = useState<BikeRide | null>(null)
   const location = useLocation()
   const prefill = (location.state as { prefill?: string } | null)?.prefill
   const [messages, setMessages] = useState<ChatMessage[]>([])
@@ -110,6 +115,8 @@ export default function Coach() {
   async function send(text: string) {
     const question = text.trim()
     if (!question || busy) return
+    const parsedRide = parseBikeNote(question)
+    if (parsedRide) { setRide(parsedRide); setInput(""); return }
     setBusy(true)
     setInput("")
     setMessages((m) => [
@@ -165,9 +172,9 @@ export default function Coach() {
   const active = conversations.find((c) => c.id === activeId)
 
   return (
-    <div className="mx-auto flex h-dvh max-w-3xl flex-col p-4 sm:p-6">
+    <div className="mx-auto flex h-[calc(100dvh-180px)] min-h-[400px] max-w-3xl flex-col p-4 sm:h-[calc(100dvh-48px)] sm:p-6">
       <div className="mb-2">
-        <h1 className="text-xl font-semibold tracking-tight">Coach</h1>
+        <div className="flex flex-wrap items-center justify-between gap-2"><h1 className="text-xl font-semibold tracking-tight">Coach</h1><Link className="track-button" to="/import">Import notes & weigh-ins</Link></div>
         <p className="text-sm text-muted-foreground">
           AI coach with read-only access to your Garmin data. Advice, not medicine.
         </p>
@@ -206,7 +213,7 @@ export default function Coach() {
         </div>
       )}
 
-      <div ref={scrollRef} className="flex-1 space-y-4 overflow-y-auto py-4 pr-1">
+      <div ref={scrollRef} className="min-h-0 flex-1 space-y-4 overflow-y-auto py-4 pr-1">
         {messages.length === 0 && (
           <div className="mt-10 flex flex-col items-center gap-2">
             <p className="mb-2 text-sm text-muted-foreground">Try asking:</p>
@@ -247,8 +254,9 @@ export default function Coach() {
         )}
       </div>
 
+      {ride && <RideConfirmation key={JSON.stringify(ride)} initial={ride} onClose={() => setRide(null)} />}
       <form
-        className="flex gap-2 border-t pt-4"
+        className="flex gap-2 border-t pt-4 pb-4"
         onSubmit={(e) => {
           e.preventDefault()
           send(input)
@@ -257,7 +265,7 @@ export default function Coach() {
         <Input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Ask your coach anything about your training…"
+          placeholder="Ask your coach, or say ‘I biked 40 minutes’…"
           disabled={busy}
         />
         <Button type="submit" disabled={busy || !input.trim()}>

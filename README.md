@@ -2,7 +2,7 @@
 
 A cycling dashboard and AI coach that turns Garmin activity data into understandable training context. Explore ride details, weekly load, recovery trends, a flexible schedule, and a timed fueling planner.
 
-**[Try the public demo](https://garmin-coach-demo.vercel.app)** — synthetic data, no account or API key required. The personal app has authenticated, single-owner Garmin/Groq integration; its hosted deployment is still pending.
+**[Try the public demo](https://garmin-coach-demo.vercel.app)** — synthetic data, no account or API key required. The personal app has authenticated, single-owner Garmin/Groq integration; it is deployed separately from the public demo.
 
 ![Synthetic training dashboard](docs/screenshots/dashboard.png)
 
@@ -16,7 +16,7 @@ npm ci
 npm run dev
 ```
 
-Open the URL Vite prints. Demo mode is the default: no backend, Garmin credentials, or paid AI service is needed. The dataset has a fixed June 17, 2026 reference date so the schedule remains useful. Coach replies in the demo are clearly labeled authored examples. Use **Reset demo** to clear saved schedules and fueling plans.
+Open the URL Vite prints. Demo mode is the default: no backend, Garmin credentials, or paid AI service is needed. The dataset has a fixed June 17, 2026 reference date so the schedule remains useful. Coach replies in the demo are clearly labeled authored examples. Use **Reset demo** to clear saved demo tracking, schedules and fueling plans.
 
 ## What it demonstrates
 
@@ -26,6 +26,12 @@ Open the URL Vite prints. Demo mode is the default: no backend, Garmin credentia
 - A FastAPI backend sharing normalized, read-only Garmin tools with an MCP server.
 - Groq coaching with streamed responses, validated tools, bounded requests, caching, and SQLite conversation history.
 - Separate public-demo and private-data paths, server-enforced owner sessions, and deployment configuration for Vercel/Railway.
+
+## Manual tracking iteration (local, not yet deployed)
+
+The new phone-first screens add workout templates, editable per-set logging, custom exercises and workouts, recoverable drafts, manual meals and favourites, pound weigh-ins, bike minutes, and template-first exercise history. Today, Train, Schedule, Progress and Coach form the navigation; cycling tools remain accessible from Train. Basic tracking works without AI.
+
+See [tracking setup and validation](docs/tracking.md) for private template provisioning, storage, draft recovery and backup/restore. Public examples are synthetic. These changes are available in the local source; the hosted links above still serve the earlier release. Real iPhone validation and production deployment remain pending.
 
 ## Architecture
 

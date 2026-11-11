@@ -186,3 +186,13 @@ Next action: review the draft PR, rotate the chat-shared Groq key directly in Ra
 - Validation: 73 backend tests, Ruff and mypy passed, including malformed quota bodies/headers, request-size rejection, and bounded retries without duplicate transcript messages.
 
 - Deployed quota fix to Railway (`b071ab32-ff8d-4ca6-b16a-cb7b9901fdd0`). Live Groq smoke test of the deployed coaching loop with synthetic context/tool results completed: one tool event, 18 text events, one done event, no errors. Temporary transcript storage was removed automatically. GitHub push and PR checks passed. The user's exact personal query was not replayed; ask them to retry to confirm their case.
+
+## Next product iteration
+
+See [plan.md](plan.md) for the November 9, 2026 iPhone-first workout, food, and weight tracking roadmap. It separates initial scope from future features and is planning-only pending implementation approval.
+
+### Manual tracking implementation — November 10, 2026 (local only)
+
+- Implemented phone-first workout, meals, weigh-ins, bike-minute tracking and template-first history. Existing Schedule remains in place. New private tracking API uses versioned SQLite snapshots, authenticated writes, mutation receipts and draft conflict handling. Public demo uses independent synthetic data.
+- Validation: 81 backend tests, Ruff/mypy, both frontend builds, deterministic tracking/demo checks and synthetic Chromium browser flows passed. Frontend lint warnings and bundle warning remain. Actual iPhone Safari and production smoke tests remain pending.
+- No deployment or personal-data transfer in this iteration. Follow `plan.md`, `context.md` and `docs/tracking.md` for remaining release work. Existing hosted deployment IDs above still refer to the previous release.

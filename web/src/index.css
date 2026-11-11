@@ -155,3 +155,45 @@
   --viz-grid: #2c2c2a;
   --viz-axis: #898781;
 }
+
+/* Phone-first manual tracking; existing Schedule styles stay intact. */
+.tracking-page { max-width: 680px; margin: 0 auto; padding: 24px 18px 40px; }
+.tracking-page h1 { font-size: 30px; font-weight: 650; letter-spacing: -1px; margin-bottom: 12px; }
+.tracking-page h2 { font-size: 19px; font-weight: 600; margin-bottom: 10px; }
+.tracking-page p { margin: 10px 0; }
+.track-card { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 18px; margin: 18px 0; }
+.tracking-page button, .track-button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 10px 14px; border: 1px solid var(--border); border-radius: 10px; background: var(--card); color: var(--foreground); font-size: 14px; text-align: center; cursor: pointer; }
+.tracking-page button:disabled { opacity: .45; cursor: default; }
+.tracking-page .primary, .tracking-page button[aria-pressed=true] { background: var(--primary); color: var(--primary-foreground); }
+.tracking-page .wide { width: 100%; margin-top: 12px; }
+.track-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.track-row.between { justify-content: space-between; }
+.track-row > * { min-width: 0; }
+.track-columns { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+.tracking-page label { display: block; margin: 14px 0; font-size: 14px; }
+.tracking-page input:not([type=checkbox]), .tracking-page select, .tracking-page textarea { display: block; box-sizing: border-box; width: 100%; max-width: 100%; min-width: 0; min-height: 46px; padding: 10px; margin-top: 6px; border: 1px solid var(--border); border-radius: 10px; background: var(--background); color: var(--foreground); font-size: 16px; }
+.tracking-page input[type=checkbox] { width: 22px; height: 22px; }
+.tracking-page label.track-check { display: flex; gap: 10px; align-items: center; min-height: 44px; }
+.tracking-page small, .track-muted { color: var(--muted-foreground); font-size: 13px; }
+.tracking-page small { display: block; }
+.track-number { font-size: 30px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.track-list { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.track-list span:last-child { flex-shrink: 0; font-size: 13px; }
+.track-set { display: grid; grid-template-columns: 24px minmax(0,1fr) minmax(0,.8fr) 44px; gap: 8px; align-items: center; margin: 8px 0; }
+.track-set input { text-align: center; margin-top: 0!important; }
+.track-set button { padding: 6px; }
+.track-set.headings { font-size: 12px; color: var(--muted-foreground); text-align: center; }
+.set-adjust { padding-left: 32px; }
+.tracking-page details { margin: 12px 0; }
+.tracking-page summary { min-height: 44px; padding: 12px 0; cursor: pointer; }
+.track-sync { font-size: 12px; color: var(--muted-foreground); display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.track-sync button { font-size: 12px; }
+.track-picker { display: grid; gap: 8px; }
+.track-picker button { flex-direction: column; align-items: start; text-align: left; }
+.track-chart { width: 100%; min-width: 0; height: 220px; margin-top: 12px; }
+.track-history { padding: 8px 0; border-bottom: 1px solid var(--border); }
+.track-link { display: inline-block; min-height: 44px; padding: 10px 0; text-decoration: underline; }
+.tracking-page progress { width: 100%; height: 10px; border: 0; border-radius: 8px; overflow: hidden; appearance: none; background: var(--secondary); }
+.tracking-page progress::-webkit-progress-bar { background: var(--secondary); }
+.tracking-page progress::-webkit-progress-value { background: var(--primary); }
+.tracking-page progress::-moz-progress-bar { background: var(--primary); }

@@ -15,7 +15,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from . import api, chat
+from . import api, chat, imports, tracking
 from .security import install_security
 
 WEB_DIST = Path(__file__).resolve().parents[3] / "web" / "dist"
@@ -52,6 +52,8 @@ def create_app() -> FastAPI:
 
     app.include_router(api.router)
     app.include_router(chat.router)
+    app.include_router(tracking.router)
+    app.include_router(imports.router)
     if WEB_DIST.exists():
         app.mount("/", SpaStaticFiles(directory=WEB_DIST, html=True), name="frontend")
     return app
