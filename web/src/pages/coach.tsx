@@ -226,7 +226,7 @@ export default function Coach() {
           <div className="mt-10 flex flex-col items-center gap-2">
             <p className="mb-2 text-sm text-muted-foreground">Try asking:</p>
             {SUGGESTIONS.map((s) => (
-              <Button key={s} variant="outline" size="sm" onClick={() => send(s)}>
+              <Button key={s} variant="outline" size="sm" className="h-auto min-h-11 max-w-full whitespace-normal text-center" onClick={() => send(s)}>
                 {s}
               </Button>
             ))}

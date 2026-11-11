@@ -14,6 +14,8 @@ try {
   assert.equal((await records('meal')).length, 0, 'Use an empty synthetic API')
   const send = async text => { await page.getByLabel('Message your coach').fill(text); await page.getByRole('button', { name: 'Send', exact: true }).click() }
   await page.goto(personal + '/coach')
+  await page.setViewportSize({ width: 320, height: 844 }); await page.waitForTimeout(100)
+  assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'Coach suggestions must fit narrow screens')
   await send('I ate a jr chicken from mcdonalds add that to the meals today')
   assert.equal(await page.getByLabel('Calories per portion', { exact: true }).inputValue(), '380')
   assert.equal(await page.getByLabel('Protein per portion · g', { exact: true }).inputValue(), '12')
