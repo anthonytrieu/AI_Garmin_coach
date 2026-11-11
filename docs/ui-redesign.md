@@ -28,7 +28,7 @@ Executed successfully:
 - Tracking browser integration against disposable synthetic API: start, edit, completion, reload recovery, offline retention, retry, committed-write/lost-response retry, swap retaining completed sets, finish/rotation, progress, meal/weight/ride entries, 20 responsive route checks, and public demo API isolation.
 - Redesign browser checks: 72 route/layout combinations at 320/375/390/430/768/1280px in both themes, picker Escape, completion reversal, add/remove sets, warm-up, RIR, add exercise, refresh recovery, discard cancellation/confirmation and zero public demo API calls or runtime errors.
 
-The QA servers used alternate loopback ports and fresh directories under `/private/tmp/garmin-redesign-qa`; existing local servers and private records were not used. Browser testing uses Chromium touch emulation. Actual iPhone Safari keyboard, safe-area, home-screen relaunch and background behavior still require physical-device validation. No production deployment was performed; live Garmin and AI calls were not exercised.
+The QA servers used alternate loopback ports and fresh directories under `/private/tmp/garmin-redesign-qa`; existing local servers and private records were not used. Browser testing uses Chromium touch emulation. Actual iPhone Safari keyboard, safe-area, home-screen relaunch and background behavior still require physical-device validation. Implementation validation preceded production deployment (see the release record below). Live Garmin and AI calls were not exercised for this UI release.
 
 ## Screenshots
 
@@ -52,3 +52,13 @@ DEMO_TEST_URL=http://127.0.0.1:5183 \
 ```
 
 `BEFORE_TEST_URL` is optional and should serve the original frontend with synthetic demo data. See `tracking.md` for provisioning the separate disposable personal API fixture; `TRACKING_TEST_URL` and `DEMO_TEST_URL` override the integration test's default origins. Never target private or production records.
+
+## Production release — November 10, 2026
+
+- Source commit `dd338c9` pushed to `portfolio-release`; GitHub Actions [passed](https://github.com/anthonytrieu/AI_Garmin_coach/actions/runs/42956710264). Full backend validation also passed: 88 tests, Ruff and mypy.
+- Personal frontend: `dpl_7H3ov3kwB6vkimWcQq7ngnT6kPJL`, READY and aliased to https://garmin-coach-personal.vercel.app.
+- Public demo: `dpl_AT2BmQY9FuiddrDKwuj4aXdgXQ42`, READY and aliased to https://garmin-coach-demo.vercel.app.
+- Only committed frontend files were packaged for deployment. Existing API forwarding was preserved. Railway, runtime configuration, persistent volume and private records were unchanged.
+- Hosted checks passed backend health, anonymous denial, incorrect-Origin rejection, owner login, Secure/HttpOnly/SameSite cookies, session reload, Train/Progress/Gym schedule mobile routes and logout. Demo direct routes and synthetic workout editing/completion/refresh recovery passed, with zero API requests and no browser runtime errors.
+- Author and committer are `ata99 <ata99@sfu.ca>`. GitHub's contributor API returned only `anthonytrieu`.
+- Physical iPhone Safari validation remains outstanding. The backend was not restarted, and no live Garmin or AI call was needed for this frontend-only deployment.

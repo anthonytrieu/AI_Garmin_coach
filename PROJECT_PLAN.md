@@ -221,3 +221,10 @@ Owner authorized GitHub push and deployment to the existing hosting. Commit auth
 - Hosted browser QA found the shared button defaults to a non-submit button. The owner login now explicitly uses `type="submit"`; synthetic browser checks cover click submission, bad-password recovery and logout. Frontend rebuilt and redeployed with this fix.
 
 - Final private frontend deployment: `dpl_CrXswJFEmdUA7jQ8SL9jpUVq2xZ1`. Hosted Chromium checks passed login/reload/logout, Train/Schedule/meal/import/Progress at 390px, simplified meal controls and import page. Existing public demo emitted no API requests. Actual iPhone remains to be tested by the owner. Repository history has only the configured owner author and no co-author trailers.
+
+### Mobile UI production release — November 10, 2026
+
+- UI source `dd338c9` pushed to `portfolio-release` with the configured owner as author and committer. GitHub CI passed. Contributor API lists only `anthonytrieu`.
+- Personal frontend deployed as `dpl_7H3ov3kwB6vkimWcQq7ngnT6kPJL`; public demo as `dpl_AT2BmQY9FuiddrDKwuj4aXdgXQ42`. Both production aliases are active. Deployments used sanitized committed frontend bundles and existing project settings.
+- Hosted read-only owner authentication/mobile route checks passed; synthetic demo workout/reload checks passed with no API requests or browser errors. Railway and production tracking records were unchanged.
+- Full local validation: 88 backend tests, Ruff, mypy, frontend build/lint and deterministic demo/tracking checks passed. Existing frontend warnings remain. See `docs/ui-redesign.md` for screenshot and browser evidence; physical iPhone review remains outstanding.
