@@ -196,3 +196,16 @@ See [plan.md](plan.md) for the November 9, 2026 iPhone-first workout, food, and 
 - Implemented phone-first workout, meals, weigh-ins, bike-minute tracking and template-first history. Existing Schedule remains in place. New private tracking API uses versioned SQLite snapshots, authenticated writes, mutation receipts and draft conflict handling. Public demo uses independent synthetic data.
 - Validation: 81 backend tests, Ruff/mypy, both frontend builds, deterministic tracking/demo checks and synthetic Chromium browser flows passed. Frontend lint warnings and bundle warning remain. Actual iPhone Safari and production smoke tests remain pending.
 - No deployment or personal-data transfer in this iteration. Follow `plan.md`, `context.md` and `docs/tracking.md` for remaining release work. Existing hosted deployment IDs above still refer to the previous release.
+
+## Meal, schedule and import follow-up — November 10, 2026
+
+- Latest owner request supersedes earlier deferred scope: Add meal now contains name, calories/protein and date/time, with recent meals but no serving/carbs/fat/favourite controls. Old stored meal totals remain compatible.
+- Gym planning is primary at `/schedule`: template/date slots, rescheduling, start/resume and completion links. Previous cycling assignments remain accessible at `/cycling-schedule`. The existing bike gauge remains available; planning/imports never advance rotation.
+- Coach now links to reviewed history import: local notes/CSV parsing, explicit year, editable dates/sets/template association, source preservation, optional bounded Groq extraction, atomic saves and duplicate protection. Unknown/assisted reps stay flagged; future suggestions are not completed sets. General Coach log-reading and screenshot OCR remain deferred.
+- Actual supplied sources were checked locally and retained only under ignored `.local/import-review/`; they are review candidates, not saved history. Missing years are explicit review assumptions, not confirmed dates. No personal source was sent to Groq or added to public fixtures.
+- Validation: 88 backend tests, Ruff/mypy, demo and personal builds, deterministic tracking/demo checks passed. Browser checks passed meal totals, schedule-to-completion, CSV save/repeat deduplication, uncertain notes, unchanged rotation on imports and six phone-width layout checks. New `web/check-import-browser.mjs` preserves the synthetic integration check. Existing frontend lint/bundle warnings remain. Actual iPhone Safari and live AI extraction quality remain unverified.
+- No deployment, paid services, commit or push performed in this follow-up. Earlier deployment history remains historical.
+
+## Release preparation — November 10, 2026
+
+Owner authorized GitHub push and deployment to the existing hosting. Commit author/committer use the configured owner identity, without AI co-author trailers. Private production data was backed up at `/data/backups/release-2026-11-10-gym` with SQLite integrity checks before provisioning runtime templates/current winter context. Historical import candidates remain local and unsaved. Deployment results will be recorded after verification.

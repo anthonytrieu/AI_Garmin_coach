@@ -29,7 +29,7 @@ Open the URL Vite prints. Demo mode is the default: no backend, Garmin credentia
 
 ## Manual tracking iteration (local, not yet deployed)
 
-The new phone-first screens add workout templates, editable per-set logging, custom exercises and workouts, recoverable drafts, manual meals and favourites, pound weigh-ins, bike minutes, and template-first exercise history. Today, Train, Schedule, Progress and Coach form the navigation; cycling tools remain accessible from Train. Basic tracking works without AI.
+The new phone-first screens add workout templates, editable per-set logging, custom exercises and workouts, recoverable drafts, simple calorie/protein meals, reviewed history imports, gym scheduling, pound weigh-ins, bike minutes, and template-first exercise history. Today, Train, Schedule, Progress and Coach form the navigation; cycling tools remain accessible from Train. Basic tracking works without AI.
 
 See [tracking setup and validation](docs/tracking.md) for private template provisioning, storage, draft recovery and backup/restore. Public examples are synthetic. These changes are available in the local source; the hosted links above still serve the earlier release. Real iPhone validation and production deployment remain pending.
 

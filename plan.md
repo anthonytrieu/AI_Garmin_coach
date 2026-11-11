@@ -25,7 +25,7 @@ Do not publish personal weigh-ins, meals, workout weights, screenshots, or athle
 
 ## 2. First-release navigation and phone UX
 
-Preserve the existing Schedule experience. Proposed five bottom tabs: **Today · Train · Schedule · Progress · Coach**; validate spacing on iPhone during mockup review. Keep controls reachable with one hand, avoid horizontal scrolling, and test with the iPhone keyboard open.
+Make gym planning primary in Schedule and preserve the previous cycling schedule separately. Proposed five bottom tabs: **Today · Train · Schedule · Progress · Coach**; validate spacing on iPhone during mockup review. Keep controls reachable with one hand, avoid horizontal scrolling, and test with the iPhone keyboard open.
 
 ### Today
 
@@ -44,8 +44,8 @@ Preserve the existing Schedule experience. Proposed five bottom tabs: **Today ·
 
 ### Schedule
 
-- Keep the current Schedule accessible in the initial release.
-- Future enhancement: select Upper A, Arms A, or another saved template and assign it to a day; allow multiple sessions in one day and rescheduling.
+- Keep the previous cycling Schedule accessible at `/cycling-schedule`.
+- Implemented locally: select Upper A, Arms A, or another saved template and assign it to a day; allow multiple sessions in one day and rescheduling.
 - Start the scheduled template directly. Planning a workout must not mark it completed, advance rotation, or add activity minutes.
 - Preserve completed history when future schedule entries or templates change.
 
@@ -143,9 +143,9 @@ Machine chest press at 70 lb means 45 + 25 lb on one side. Do not silently doubl
 
 ### Manual logging first
 
-- Add meal: name, calories, protein, date/time, servings eaten; carbs/fat optional.
+- Add meal: name, calories, protein and date/time for the amount eaten. No servings, carbs/fat or favourite controls.
 - Quick calorie-only entry is allowed. Missing protein is unknown, not zero.
-- Save favourites and repeat recent meals; edit serving quantity before saving.
+- Repeat recent meals; edit total calories/protein before saving.
 - Support snacks, drinks, extras, and backdated entries.
 - Make edits/deletion easy; use an undo option for accidental deletion.
 - Meal totals and daily totals are deterministic calculations, not model output.
@@ -163,7 +163,7 @@ Included as the next increment after reliable manual logging, not a dependency f
 
 Example conversation: screenshot(s) + “I ate one serving of this meal.” Extract the specified serving quantity without asking again. Combine a meal-name screenshot and its nutrition screenshot into one draft, not two meals. Ask only for missing or ambiguous serving basis/date/details.
 
-Owner-supplied HelloFresh example: **Spicy-Sweet Double Ground Beef Stir-Fry**, with Fried Eggs and Green Onion Rice. The nutrition screenshot explicitly selects **per serving** and lists **1,080 kcal, 62 g protein, 97 g carbohydrate, and 49 g fat**. One serving should add 1,080 kcal and 62 g protein; half should add 540 kcal and 31 g protein. Carbs/fat remain optional. These are reference extraction values, not an instruction to log a meal now. Keep the original screenshots out of the public repository/demo. Use the same generic nutrition-label workflow for Factor. The owner expects a similar format; a Factor sample is useful later for validation, not a planning or basic-development blocker. Do not assume one package always equals one labelled serving.
+- Private meal-label examples are retained outside the repository. They are extraction references, not consumed meal records; public tests use synthetic values.
 
 Prefer nutrition text from a recipe/app screenshot. Do not present calorie estimates from a plate photo as measured nutrition. Distinguish per-serving, per-100-g, and whole-recipe values. Do not assume recipe serving count equals servings eaten.
 
@@ -227,7 +227,7 @@ The current chat path is text-only. Evaluate browser OCR or an explicitly chosen
 
 - [x] Add private data models, versioned tracking storage, backup/export support, and authenticated CRUD.
 - [x] Implement templates, rotation, set entry, swaps, custom exercises/workouts, and recoverable workout drafts (local/browser validated).
-- [x] Implement manual meals, recent/favourite shortcuts, calorie/protein totals, edit/delete/undo and day completeness.
+- [x] Implement manual meals, recent-meal shortcuts, calorie/protein totals, edit/delete/undo and day completeness.
 - [x] Implement manual weigh-ins, rolling averages, Today actions, and template-first exercise graphs.
 - [x] Archive the old event plan and configure current goals privately in local files; hosted provisioning remains pending.
 - [x] Add manual bike-duration logging, 150-minute gauge, and bounded local Coach save-confirmation with duplicate protection.
@@ -238,8 +238,8 @@ Acceptance: complete an ordinary gym session and record a day's meals/weight ent
 ### Phase 2 — reduce logging friction
 
 - [ ] Add HelloFresh and Factor screenshot extraction, including paired screenshots and serving scaling, with editable confirmation and manual fallback.
-- [ ] Add reviewed CSV weight-history import.
-- [ ] Add pasted workout-note parsing into a reviewable draft.
+- [x] Add reviewed CSV weight-history import (local; year explicitly reviewed).
+- [x] Add pasted workout-note parsing into a reviewable batch, with optional Groq extraction.
 - [ ] Connect Coach to saved records using bounded context; respect provider limits.
 
 Acceptance: screenshots never save unconfirmed values; serving calculations are correct; repeated saves/imports do not duplicate records; parsing failures preserve the user's input and allow manual completion.
@@ -273,7 +273,7 @@ Acceptance: screenshots never save unconfirmed values; serving calculations are 
 
 ### Other deferred features
 
-- Slot lifting templates such as Upper A and Arms A into the preserved Schedule; start and link completed sessions from it.
+- Template slots, starting sessions and completion links were promoted from deferred scope by the November 10 request and are implemented locally.
 - Optional Strava or activity-file import with source-aware duplicate reconciliation.
 
 - Full offline food/weight logging with reliable background retry and conflict resolution.
@@ -332,3 +332,16 @@ The approved core flows are now implemented in the app, including the later cust
 - Private template/profile/plan files stay ignored under `.local/`; original context backed up and Schedule JSON preserved. Public templates are deliberately separate synthetic examples. No new costs, private transfers or deployments.
 - Expenditure remains unavailable rather than inventing account fields or a calorie deficit. Full offline asset loading, multi-device merge and deferred integrations are not implemented.
 - Next: iPhone review and release provisioning/backup; deployment and hosted checks are still required. No repeat approval of settled layout/preferences is needed.
+
+## Meal, schedule and import follow-up — November 10, 2026
+
+- Latest owner request supersedes earlier deferred scope: Add meal now contains name, calories/protein and date/time, with recent meals but no serving/carbs/fat/favourite controls. Old stored meal totals remain compatible.
+- Gym planning is primary at `/schedule`: template/date slots, rescheduling, start/resume and completion links. Previous cycling assignments remain accessible at `/cycling-schedule`. The existing bike gauge remains available; planning/imports never advance rotation.
+- Coach now links to reviewed history import: local notes/CSV parsing, explicit year, editable dates/sets/template association, source preservation, optional bounded Groq extraction, atomic saves and duplicate protection. Unknown/assisted reps stay flagged; future suggestions are not completed sets. General Coach log-reading and screenshot OCR remain deferred.
+- Actual supplied sources were checked locally and retained only under ignored `.local/import-review/`; they are review candidates, not saved history. Missing years are explicit review assumptions, not confirmed dates. No personal source was sent to Groq or added to public fixtures.
+- Validation: 88 backend tests, Ruff/mypy, demo and personal builds, deterministic tracking/demo checks passed. Browser checks passed meal totals, schedule-to-completion, CSV save/repeat deduplication, uncertain notes, unchanged rotation on imports and six phone-width layout checks. New `web/check-import-browser.mjs` preserves the synthetic integration check. Existing frontend lint/bundle warnings remain. Actual iPhone Safari and live AI extraction quality remain unverified.
+- No deployment, paid services, commit or push performed in this follow-up. Earlier deployment history remains historical.
+
+## Release preparation — November 10, 2026
+
+Owner authorized GitHub push and deployment to the existing hosting. Commit author/committer use the configured owner identity, without AI co-author trailers. Private production data was backed up at `/data/backups/release-2026-11-10-gym` with SQLite integrity checks before provisioning runtime templates/current winter context. Historical import candidates remain local and unsaved. Deployment results will be recorded after verification.

@@ -1,10 +1,10 @@
 # Manual training and daily tracking
 
-The phone navigation is Today, Train, Schedule, Progress and Coach. Schedule keeps its existing implementation; cycling pages remain under Train. Tracking requires no AI provider. Screenshot extraction, CSV import, scheduled lifting templates, automatic activity imports, and full offline sync are deferred.
+The phone navigation is Today, Train, Schedule, Progress and Coach. Schedule plans gym templates; the previous cycling schedule remains at `/cycling-schedule`. Tracking requires no AI provider. Screenshot extraction, automatic activity imports and full offline sync remain deferred.
 
 ## Private storage and templates
 
-Set `GARMIN_COACH_DATA` to persistent private storage. Tracking uses `tracking.db` beside the existing `chat.db`, so it never rewrites chat tables. Version 1 stores validated, revisioned JSON records for templates, workout snapshots, meals, weigh-ins, bike rides, food-day completeness and rotation overrides. Dates are local calendar dates; timestamps are UTC. Browser dates use the device timezone. The initial weekly boundary is Monday–Sunday.
+Set `GARMIN_COACH_DATA` to persistent private storage. Tracking uses `tracking.db` beside the existing `chat.db`, so it never rewrites chat tables. Version 1 stores validated, revisioned JSON records for templates, workout snapshots, meals, weigh-ins, bike rides, food-day completeness, scheduled workouts, dated notes and rotation overrides. Dates are local calendar dates; timestamps are UTC. Browser dates use the device timezone. The initial weekly boundary is Monday–Sunday.
 
 `GARMIN_COACH_TEMPLATES` optionally points to a private JSON file containing an array of `{ "id": "stable-id", "data": { "name": "Workout", "group": "Custom", "exercises": [...] } }` records. See `Template`/`Exercise` in `src/garmin_coach/web/tracking.py` for the validated schema. It is imported only if there are no template records, including tombstones. Template edits are never overwritten by subsequent startup imports. If no file is supplied, create custom workouts in Train. Do not put the owner's file, athlete context or load suggestions in the public repository or frontend bundle.
 
@@ -47,3 +47,13 @@ node web/check-tracking.mjs
 Garmin daily expenditure is shown as unavailable until the account's daily fields are verified; no final-day projection or deficit is invented. Coach recognizes the bounded local syntax `I biked 40 minutes`, optionally with `today`, `yesterday`, or `on YYYY-MM-DD`, and shows a confirmation card. General Coach access to structured logs remains deferred. No paid provider or integration is enabled.
 
 The new implementation has not been deployed. Before release: validate on actual iPhone Safari/home-screen use; back up production data; provision the private runtime templates/current context; deploy the backend before the private frontend; test auth, persistence after restart, and smoke-test demo isolation. The local private profile/plan update does not update Railway automatically.
+
+## History imports and gym planning
+
+Coach links to `/import`. Paste notes or load a weight CSV, choose the year for dates without one, review the original source and editable extracted records, then save selected entries. Local parsing requires no AI. Optional **Use AI to extract** explicitly sends the pasted text to the configured Groq provider, using bounded chunks and no paid fallback. AI extraction has mocked integration coverage; personal notes have not been sent to it.
+
+Missing dates and uncertain reps remain flagged. Generic Upper/Arms labels do not guess A/B; select a template during review to associate history. Future load suggestions are retained as notes rather than completed sets. Batch saves validate before an atomic transaction, deduplicate retries/existing dates, and never advance the current rotation. Review drafts remain in private browser storage. Historical movements do not alter current templates.
+
+Schedule supports template/date slots, rescheduling, starting and completion links. Planning never advances the rotation; completing the current rotation template follows ordinary workout rules. Existing cycling assignments remain intact. Meal entry now uses total calories/protein for the amount eaten; old stored portion values remain compatible.
+
+`node web/check-import-browser.mjs` uses the same disposable server/template setup as the tracking browser check and requires an empty database apart from templates. It creates only synthetic meals, schedule slots, workouts and weigh-ins; run it separately with fresh disposable storage.

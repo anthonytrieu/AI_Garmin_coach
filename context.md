@@ -1,6 +1,6 @@
 # Development handoff: Garmin Coach winter iteration
 
-Last updated: November 9, 2026. This file captures conversation decisions; it is not evidence that planned features are implemented.
+Last updated: November 10, 2026. This file captures conversation decisions; it is not evidence that planned features are implemented.
 
 ## Start here
 
@@ -35,8 +35,8 @@ The planning files are local/uncommitted at handoff. The earlier deployment road
 - Approximately 95% iPhone usage. Fast one-handed entry is more important than feature count.
 - Bodybuilding is now the main focus. Fondo is past: archive the old plan and update private coach context when implementing.
 - Owner wants gradual weight/fat loss and abdominal definition, with an expressed desired pace of 0.5–1 lb/week. Record this as a preference; do not claim scale readings measure fat loss or prescribe a deficit automatically.
-- Weigh-ins are pounds and currently recorded manually in Google Sheets. First release supports manual weight entry; reviewed CSV import later, no assumed live Sheets connection.
-- Calories and protein are primary; carbs/fat optional.
+- Weigh-ins are pounds and currently recorded manually in Google Sheets. Manual entry and reviewed CSV import are implemented locally; no live Sheets connection.
+- Meal entry asks for calories/protein for the amount eaten; no servings, carbs/fat or favourite controls.
 - Today has Start workout and Add meal prominently; compact latest-weight card has Add weight; bike gauge has Log ride.
 - Preserve Schedule. Proposed navigation: Today, Train, Schedule, Progress, Coach. Phone mockups should validate the five-tab layout.
 - Ordinary logging, totals, and charts must work without AI.
@@ -89,7 +89,7 @@ No calf raises. Exercise order and set counts are confirmed; 8–10 remains an e
 - Attach screenshot(s) and say “I ate one serving.” Extract name, visible nutrition, and basis; use the already supplied portion amount. Show one editable confirmation card, then update calorie/protein counters after saving.
 - Combine paired name/nutrition screenshots into one meal; prevent duplicate saves.
 - Owner expects Factor to be similar. A Factor sample is useful later for testing, not a blocker now. Never assume one package equals one serving without label evidence.
-- Supplied HelloFresh example: Spicy-Sweet Double Ground Beef Stir-Fry, with Fried Eggs and Green Onion Rice; nutrition explicitly per serving: 1,080 kcal, 62 g protein, 97 g carbs, 49 g fat. Half serving: 540 kcal and 31 g protein. Reference only: user did not ask to log it as eaten.
+- Private meal-label examples are retained outside the repository. They are extraction references, not consumed meal records; public tests use synthetic values.
 - Screenshots were attached in this chat; temporary attachment paths may not survive. Do not depend on those paths for production or publish the screenshots as synthetic fixtures.
 - Current chat is text-only. Select and validate OCR/image processing during implementation rather than assuming Groq model image support. Keep manual logging available if extraction fails or quota is exhausted.
 - Missing protein is unknown, not zero; serving math and totals are deterministic. Incomplete food logs must not imply a measured calorie deficit.
@@ -97,7 +97,7 @@ No calf raises. Exercise order and set counts are confirmed; 8–10 remains an e
 ## Scope order
 
 1. Reviewable iPhone mockups and template preview.
-2. Bare bones: workout logging/swaps/recovery, manual meals/favourites, manual weigh-ins/trends, manual bike gauge, preserved Schedule, current private goals, basic expenditure estimates where available.
+2. Bare bones: workout logging/swaps/recovery, manual meals/recent meals, manual weigh-ins/trends, manual bike gauge, preserved Schedule, current private goals, basic expenditure estimates where available.
 3. Friction reduction: screenshot extraction/confirmation, workout-note parsing, reviewed weight CSV import, bounded Coach access to saved logs.
 4. Later: schedule template slots, gym attendance calendar, Copy workout for Strava, optional imports, more advanced trends/offline sync.
 
@@ -151,3 +151,16 @@ Next action: follow the owner’s development instruction in the new chat, begin
 - New setup/limits: `docs/tracking.md`. CI now includes deterministic tracking checks. No commit, push, deployment, real-data API test, external personal-data transfer or paid service activation. Existing uncommitted planning work preserved.
 - Local demo preview remains on loopback port 5173. Synthetic private test UI/API processes (5174/8787) were stopped after validation; their disposable test records are under /private/tmp.
 - Next release steps: actual iPhone review, production backup + private runtime provisioning, verified expenditure fields if available, then backend-first private/demo deployment and hosted persistence/auth checks. Current hosted versions are unchanged.
+
+## Meal, schedule and import follow-up — November 10, 2026
+
+- Latest owner request supersedes earlier deferred scope: Add meal now contains name, calories/protein and date/time, with recent meals but no serving/carbs/fat/favourite controls. Old stored meal totals remain compatible.
+- Gym planning is primary at `/schedule`: template/date slots, rescheduling, start/resume and completion links. Previous cycling assignments remain accessible at `/cycling-schedule`. The existing bike gauge remains available; planning/imports never advance rotation.
+- Coach now links to reviewed history import: local notes/CSV parsing, explicit year, editable dates/sets/template association, source preservation, optional bounded Groq extraction, atomic saves and duplicate protection. Unknown/assisted reps stay flagged; future suggestions are not completed sets. General Coach log-reading and screenshot OCR remain deferred.
+- Actual supplied sources were checked locally and retained only under ignored `.local/import-review/`; they are review candidates, not saved history. Missing years are explicit review assumptions, not confirmed dates. No personal source was sent to Groq or added to public fixtures.
+- Validation: 88 backend tests, Ruff/mypy, demo and personal builds, deterministic tracking/demo checks passed. Browser checks passed meal totals, schedule-to-completion, CSV save/repeat deduplication, uncertain notes, unchanged rotation on imports and six phone-width layout checks. New `web/check-import-browser.mjs` preserves the synthetic integration check. Existing frontend lint/bundle warnings remain. Actual iPhone Safari and live AI extraction quality remain unverified.
+- No deployment, paid services, commit or push performed in this follow-up. Earlier deployment history remains historical.
+
+## Release preparation — November 10, 2026
+
+Owner authorized GitHub push and deployment to the existing hosting. Commit author/committer use the configured owner identity, without AI co-author trailers. Private production data was backed up at `/data/backups/release-2026-11-10-gym` with SQLite integrity checks before provisioning runtime templates/current winter context. Historical import candidates remain local and unsaved. Deployment results will be recorded after verification.
