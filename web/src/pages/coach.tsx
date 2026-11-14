@@ -1,6 +1,6 @@
 import CoachLogReview from "@/components/coach-log-review"
 import type { LogReview } from "@/lib/coach-logging"
-import { createLogReview, loadLogReview, persistLogReview } from "@/lib/coach-logging"
+import { applyFood, estimateMeal, foodPhoto, createLogReview, loadLogReview, persistLogReview } from "@/lib/coach-logging"
 import { useTracking } from "@/components/tracking-provider"
 import { useEffect, useRef, useState } from "react"
 import ReactMarkdown from "react-markdown"
@@ -70,6 +70,8 @@ export default function Coach() {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [conversations, setConversations] = useState<ConversationSummary[]>([])
   const [activeId, setActiveId] = useState<string | null>(null)
+  const [photo, setPhoto] = useState<string | undefined>()
+  const [photoBusy, setPhotoBusy] = useState(false)
   const [input, setInput] = useState(prefill ?? "")
   const [busy, setBusy] = useState(false)
   const sessionRef = useRef<string | null>(null)
@@ -121,10 +123,25 @@ export default function Coach() {
   }
 
   async function send(text: string) {
-    const question = text.trim()
+    const question = text.trim() || (photo ? 'Estimate the food and portions in this photo' : '')
     if (!question || busy || review) return
-    const next = createLogReview(question, tracking.rows('meal'))
-    if (next) { if (updateReview(next)) setInput(''); return }
+    let next = createLogReview(question, tracking.rows('meal'))
+    if (photo && !next) next = createLogReview('I ate the food in this photo', tracking.rows('meal'))
+    if (next) {
+      if (next.kind === 'meal' && (!next.calories || photo)) {
+        setBusy(true); setLoggingError('')
+        try {
+          const food = await estimateMeal(question, photo)
+          next = applyFood({ ...next, amount: '1' }, food)
+        } catch (error) {
+          updateReview(next)
+          setLoggingError(error instanceof Error ? error.message : 'Meal estimate unavailable. Retry from the review.')
+          setBusy(false); return
+        } finally { setBusy(false) }
+      }
+      if (updateReview(next)) { setInput(''); setPhoto(undefined) }
+      return
+    }
     setBusy(true)
     setInput("")
     setMessages((m) => [
@@ -264,6 +281,16 @@ export default function Coach() {
 
       {loggingError && <p role="alert">{loggingError}</p>}
       {review && <CoachLogReview key={review.id} review={review} onChange={updateReview} onClose={() => updateReview(null)} />}
+      <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+        <label className="track-button">{photoBusy ? 'Preparing photo…' : 'Attach food photo'}<input className="sr-only" type="file" accept="image/jpeg,image/png,image/webp" disabled={busy || !!review || photoBusy} onChange={async event => {
+          const file = event.target.files?.[0]; event.target.value = ''; if (!file) return
+          setPhotoBusy(true); setLoggingError('')
+          try { setPhoto(await foodPhoto(file)) } catch (error) { setLoggingError(error instanceof Error ? error.message : 'Unable to read photo.') }
+          finally { setPhotoBusy(false) }
+        }} /></label>
+        <span>Food photos are sent to Groq for an estimate when you press Send.</span>
+        {photo && <><img src={photo} alt="Food photo ready to estimate" className="h-16 w-16 rounded object-cover" /><button onClick={() => setPhoto(undefined)}>Remove photo</button></>}
+      </div>
       <form
         className="flex gap-2 border-t pt-4 pb-4"
         onSubmit={(e) => {
@@ -278,7 +305,7 @@ export default function Coach() {
           placeholder="Ask your coach, or log a meal or ride…"
           disabled={busy || !!review}
         />
-        <Button type="submit" disabled={busy || !!review || !input.trim()}>
+        <Button type="submit" disabled={busy || !!review || photoBusy || (!input.trim() && !photo)}>
           {busy ? "Thinking…" : "Send"}
         </Button>
       </form>

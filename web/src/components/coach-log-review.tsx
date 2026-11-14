@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { useTracking } from './tracking-provider'
 import { TrackingDialog } from '@/pages/tracking/dialog'
 import { DEMO } from '@/lib/mode'
-import { normalizeFood, applyFood } from '@/lib/coach-logging'
+import { estimateMeal, normalizeFood, applyFood } from '@/lib/coach-logging'
 import type { FoodMatch, LogReview } from '@/lib/coach-logging'
 import { TrackingError } from '@/lib/tracking'
 import type { BikeRide, Meal } from '@/lib/tracking'
@@ -34,10 +34,20 @@ export default function CoachLogReview({ review: r, onChange, onClose }: { revie
     } catch (err) { if (!controller.signal.aborted) setError(err instanceof Error ? err.message : 'Food search unavailable. Enter label values below.') }
     finally { setSearching(false) }
   }
+  async function estimate() {
+    searchAbort.current?.abort()
+    const controller = new AbortController(); searchAbort.current = controller
+    setSearching(true); setError('')
+    try {
+      const food = await estimateMeal(r.description ?? `${r.amount || '1'} portions of ${r.query}`, undefined, controller.signal)
+      onChange(applyFood({ ...r, amount: '1' }, food))
+    } catch (err) { if (!controller.signal.aborted) setError(err instanceof Error ? err.message : 'Meal estimate unavailable.') }
+    finally { if (!controller.signal.aborted) setSearching(false) }
+  }
   async function save() {
     if (inFlight.current || (duplicate && !additional)) return
     const data = r.submitted ?? (r.kind === 'meal'
-      ? { name: r.name.trim(), date: r.date, time: r.time, calories: totalCalories, protein: totalProtein, carbs: null, fat: null, servings: 1, favourite: false }
+      ? { name: (r.source.startsWith('AI estimate') ? `≈ ${r.name.trim()}` : r.name.trim()).slice(0, 120), date: r.date, time: r.time, calories: totalCalories, protein: totalProtein, carbs: null, fat: null, servings: 1, favourite: false }
       : { date: r.date, minutes: Number(r.minutes), note: 'Logged through Coach', source: 'manual', externalId: null }) as Meal | BikeRide
     if (!onChange({ ...r, submitted: data })) { setError('Device storage unavailable. Enable storage before saving this entry.'); return }
     inFlight.current = true; setBusy(true); setError('')
@@ -69,13 +79,14 @@ export default function CoachLogReview({ review: r, onChange, onClose }: { revie
         <fieldset disabled={locked}>
           {r.kind === 'meal' ? <>
             <p><strong>{r.name}</strong></p>
-            <p className="track-muted">{r.portion || 'Choose the portion and enter nutrition from the label below.'}</p>
+            <p className="track-muted">{r.portion || 'Estimate this meal, or choose a food match below.'}</p>
             {r.source && <small>{r.source}{r.url?.startsWith('https://') && <> · <a className="underline" href={r.url} target="_blank" rel="noreferrer">View source</a></>}</small>}
             <div className="track-columns">
               <label>Number of portions<input required inputMode="decimal" type="number" min="0.01" max="100" step="any" value={r.amount} onChange={event => change({ amount: event.target.value })} /></label>
               <label>Meal date<input type="date" required value={r.date} onChange={event => change({ date: event.target.value })} /></label>
             </div>
             <p><strong>{r.amount && r.calories ? `${Math.round(totalCalories)} cal` : 'Calories needed'}</strong> · {r.protein && r.amount ? `${Math.round(totalProtein! * 10) / 10} g protein` : 'Protein not recorded'}</p>
+            {!DEMO && <button type="button" disabled={searching || !r.query.trim()} onClick={() => void estimate()}>{searching ? 'Estimating…' : 'Look up / estimate meal'}</button>}
             <details open={r.calories === ''}>
               <summary>Edit food & nutrition</summary>
               <label>Find a food<input maxLength={120} value={r.query} onChange={event => change({ query: event.target.value })} /></label>

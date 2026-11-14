@@ -63,7 +63,7 @@ export function expandedRideText(text: string): string {
 export type LogReview = {
   kind: 'meal' | 'ride'; id: string; name: string; date: string; time: string;
   amount: string; calories: string; protein: string; minutes: string;
-  query: string; matches: FoodMatch[]; source: string; url?: string; portion: string;
+  query: string; description?: string; matches: FoodMatch[]; source: string; url?: string; portion: string;
   submitted: Meal | BikeRide | null;
 }
 const reviewKey = storageKey('coach-log-review-v1')
@@ -86,11 +86,38 @@ export function createLogReview(question: string, meals: Row<'meal'>[]): LogRevi
   const ride = parseBikeNote(expandedRideText(question))
   const meal = parseMealRequest(question)
   if (!ride && !meal) return null
-  let next: LogReview = { kind: ride ? 'ride' : 'meal', id: uid(), name: meal?.query ?? '', date: ride?.date ?? meal!.date, time: new Date().toTimeString().slice(0, 5), amount: meal?.quantity ?? '1', calories: meal?.calories ?? '', protein: meal?.protein ?? '', minutes: ride ? String(ride.minutes) : '', query: meal?.query ?? '', matches: [], source: '', portion: '', submitted: null }
+  let next: LogReview = { description: question, kind: ride ? 'ride' : 'meal', id: uid(), name: meal?.query ?? '', date: ride?.date ?? meal!.date, time: new Date().toTimeString().slice(0, 5), amount: meal?.quantity ?? '1', calories: meal?.calories ?? '', protein: meal?.protein ?? '', minutes: ride ? String(ride.minutes) : '', query: meal?.query ?? '', matches: [], source: '', portion: '', submitted: null }
   if (meal) {
     next.matches = matchingFoods(meal.query, meals)
     if (meal.calories) { next.name = meal.quantity ? `${meal.quantity} × ${meal.query}` : meal.query; next.amount = '1'; next.source = 'Nutrition supplied in your message'; next.portion = 'Whole meal as described' }
     else if (next.matches.length === 1) next = applyFood(next, next.matches[0]!)
   }
   return next
+}
+
+export async function estimateMeal(description: string, image?: string, signal?: AbortSignal): Promise<FoodMatch> {
+  const response = await fetch('/api/nutrition/estimate', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ description, ...(image ? { image } : {}) }), signal,
+  })
+  const body = await response.json()
+  if (!response.ok) throw Error(body.detail || 'Meal estimate unavailable. Please retry.')
+  return body.item as FoodMatch
+}
+
+export async function foodPhoto(file: File): Promise<string> {
+  if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 15_000_000) throw Error('Choose a JPEG, PNG, or WebP photo under 15 MB.')
+  const bitmap = await createImageBitmap(file)
+  try {
+    const scale = Math.min(1, 1200 / Math.max(bitmap.width, bitmap.height))
+    const canvas = document.createElement('canvas')
+    canvas.width = Math.max(1, Math.round(bitmap.width * scale)); canvas.height = Math.max(1, Math.round(bitmap.height * scale))
+    const context = canvas.getContext('2d')
+    if (!context) throw Error('Unable to prepare this photo.')
+    context.fillStyle = '#fff'; context.fillRect(0, 0, canvas.width, canvas.height)
+    context.drawImage(bitmap, 0, 0, canvas.width, canvas.height)
+    const result = canvas.toDataURL('image/jpeg', .8)
+    if (result.length > 2_600_000) throw Error('This photo is too large. Choose a smaller image.')
+    return result
+  } finally { bitmap.close() }
 }
